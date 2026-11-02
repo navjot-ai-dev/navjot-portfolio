@@ -3,14 +3,7 @@
 import Link from "next/link";
 import { Menu, X, ArrowUpRight } from "lucide-react";
 import { useState } from "react";
-
-const navLinks = [
-  { name: "Home", href: "#home" },
-  { name: "About", href: "#about" },
-  { name: "Skills", href: "#skills" },
-  { name: "Projects", href: "#projects" },
-  { name: "Contact", href: "#contact" },
-];
+import { navigationLinks } from "@/lib/constants";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -24,13 +17,13 @@ export default function Navbar() {
         </Link>
 
         <div className="hidden items-center gap-8 md:flex">
-          {navLinks.map((link) => (
+          {navigationLinks.map((link) => (
             <Link
-              key={link.name}
+              key={link.href}
               href={link.href}
               className="text-sm text-gray-400 transition-colors hover:text-white"
             >
-              {link.name}
+              {link.label}
             </Link>
           ))}
         </div>
@@ -39,7 +32,7 @@ export default function Navbar() {
           href="#contact"
           className="hidden items-center gap-2 rounded-full bg-[#FF6B2C] px-5 py-2.5 text-sm font-semibold text-black transition-all hover:bg-orange-400 md:flex"
         >
-          Let's Talk
+          Let&apos;s Talk
           <ArrowUpRight size={16} />
         </Link>
 
@@ -56,14 +49,14 @@ export default function Navbar() {
 
       {isOpen && (
         <div className="border-t border-white/10 bg-[#111111] p-6 md:hidden">
-          {navLinks.map((link) => (
+          {navigationLinks.map((link) => (
             <Link
-              key={link.name}
+              key={link.href}
               href={link.href}
               onClick={() => setIsOpen(false)}
               className="block border-b border-white/5 py-4 text-gray-300 hover:text-[#FF6B2C]"
             >
-              {link.name}
+              {link.label}
             </Link>
           ))}
         </div>
