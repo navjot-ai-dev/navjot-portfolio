@@ -23,3 +23,4 @@ export const PORTFOLIO_IMAGES = {
   contactEmail:
     "/images/VV36OxKlAadgk0sOL0RBhTKF65kocfKfVN3OEBQqpg2SxAXkAvFJ1QmLw8TtKeuxceKugg9BiWCP9_4QQ7HQyz_rc3DVGjDWExnGx2ieTs6B83Vd8cTSlA7vdDtMeA-f5VAF9GI5EJpXo7OQZPnjTZd1GpB9KXCIou0m2DFRjW93_RgO-3i4Fb0gnTvwKm30.jpg",
 } as const;
+

@@ -1,139 +1,106 @@
-import Link from "next/link";
-import {
-  ArrowUp,
-  ArrowUpRight,
-  Code2,
-  Mail,
-  Heart,
-} from "lucide-react";
+"use client";
 
-const navigation = [
-  { name: "Home", href: "#home" },
-  { name: "About", href: "#about" },
-  { name: "Skills", href: "#skills" },
-  { name: "Projects", href: "#projects" },
-  { name: "Experience", href: "#experience" },
-  { name: "Contact", href: "#contact" },
-];
-
-const EMAIL = "navjotsingh542419@gmail.com";
+import { ArrowUp, Heart, Mail } from "lucide-react";
+import { navigationLinks, SOCIAL_LINKS } from "@/lib/constants";
+import { GithubIcon, LinkedinIcon } from "@/components/ui/Icons";
 
 export default function Footer() {
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   return (
-    <footer className="border-t border-white/10 bg-[#0B0B0B] px-6 pb-8 pt-16 text-white md:px-12">
+    <footer className="relative border-t border-white/[0.08] bg-[#05080D] px-6 py-12 lg:px-16 text-white">
+      {/* Top subtle orange/blue light line */}
+      <div className="absolute top-0 left-1/2 h-px w-3/4 -translate-x-1/2 bg-gradient-to-r from-transparent via-[#FF6B00]/30 to-transparent" />
+
       <div className="mx-auto max-w-7xl">
-
-        {/* Main Footer */}
-        <div className="grid gap-12 border-b border-white/10 pb-12 md:grid-cols-2 lg:grid-cols-3">
-
-          {/* Brand */}
-          <div>
-            <Link href="#home" className="inline-flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#FF6B2C] text-lg font-black text-black">
+        {/* Main Footer Row */}
+        <div className="flex flex-col md:flex-row items-center justify-between gap-8 pb-10 border-b border-white/[0.06]">
+          
+          {/* Brand info */}
+          <div className="flex items-center gap-4">
+            <div className="relative flex h-12 w-14 items-center justify-center rounded-2xl border border-[#FF6B00]/40 bg-gradient-to-br from-[#0B1420] to-[#05080D] shadow-[0_0_20px_rgba(255,107,0,0.3)]">
+              <span className="font-extrabold tracking-wider text-[#FF6B00] text-lg font-mono">
                 NS
+              </span>
+            </div>
+
+            <div>
+              <div className="text-lg font-bold text-white tracking-tight">
+                Navjot Singh<span className="text-[#FF6B00]">.</span>
               </div>
-
-              <div>
-                <h2 className="text-lg font-bold">
-                  Navjot Singh
-                  <span className="text-[#FF6B2C]">.</span>
-                </h2>
-
-                <p className="text-xs text-neutral-500">
-                  Full Stack Developer
-                </p>
+              <div className="text-xs text-[#A3A3A3]">
+                Full Stack Developer
               </div>
-            </Link>
-
-            <p className="mt-6 max-w-sm text-sm leading-7 text-neutral-400">
-              Building modern digital experiences through creativity,
-              technology, and continuous learning.
-            </p>
-
-            <div className="mt-6 flex items-center gap-2 text-sm text-neutral-500">
-              <Code2 size={16} className="text-[#FF6B2C]" />
-              Turning ideas into digital experiences.
             </div>
           </div>
 
-          {/* Navigation */}
-          <div>
-            <h3 className="mb-6 text-sm font-bold uppercase tracking-[0.2em]">
-              Quick Links
-            </h3>
-
-            <div className="grid grid-cols-2 gap-x-6 gap-y-4">
-              {navigation.map((item) => (
-                <a
-                  key={item.name}
-                  href={item.href}
-                  className="w-fit text-sm text-neutral-400 transition-colors hover:text-[#FF6B2C]"
-                >
-                  {item.name}
-                </a>
-              ))}
-            </div>
+          {/* Quick Navigation Links */}
+          <div className="flex flex-wrap items-center justify-center gap-6">
+            {navigationLinks.map((link) => (
+              <a
+                key={link.href}
+                href={link.href}
+                className="text-xs sm:text-sm text-[#A3A3A3] transition-colors hover:text-[#FF6B00]"
+              >
+                {link.label}
+              </a>
+            ))}
           </div>
 
-          {/* Contact */}
-          <div>
-            <h3 className="mb-6 text-sm font-bold uppercase tracking-[0.2em]">
-              Let's Connect
-            </h3>
-
-            <p className="mb-5 text-sm leading-7 text-neutral-400">
-              Have a project idea or want to collaborate? Feel free to reach
-              out.
-            </p>
-
+          {/* Socials & Contact */}
+          <div className="flex items-center gap-3">
             <a
-              href={`mailto:${EMAIL}`}
-              className="group inline-flex items-center gap-2 break-all text-sm font-medium text-[#FF6B2C] transition-colors hover:text-white"
-            >
-              <Mail size={17} />
-              {EMAIL}
-
-              <ArrowUpRight
-                size={15}
-                className="shrink-0 transition-transform group-hover:-translate-y-1 group-hover:translate-x-1"
-              />
-            </a>
-
-            <a
-              href="https://github.com/navjot-ai-dev"
+              href={SOCIAL_LINKS.github}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-5 flex w-fit items-center gap-2 text-sm text-neutral-400 transition-colors hover:text-white"
+              className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-[#0B1420] text-[#A3A3A3] transition-all hover:border-[#FF6B00]/60 hover:text-[#FF6B00]"
+              aria-label="GitHub Profile"
             >
-              GitHub Profile
-              <ArrowUpRight size={15} />
+              <GithubIcon className="h-4 w-4" />
+            </a>
+
+            <a
+              href={SOCIAL_LINKS.linkedin}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-[#0B1420] text-[#A3A3A3] transition-all hover:border-[#008CFF]/60 hover:text-[#008CFF]"
+              aria-label="LinkedIn Profile"
+            >
+              <LinkedinIcon className="h-4 w-4" />
+            </a>
+
+            <a
+              href={`mailto:${SOCIAL_LINKS.email}`}
+              className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-[#0B1420] text-[#A3A3A3] transition-all hover:border-[#FF6B00]/60 hover:text-[#FF6B00]"
+              aria-label="Email Navjot"
+            >
+              <Mail size={15} />
             </a>
           </div>
+
         </div>
 
-        {/* Bottom Footer */}
-        <div className="flex flex-col items-center justify-between gap-5 pt-8 text-center sm:flex-row sm:text-left">
-
-          <p className="text-xs text-neutral-500">
+        {/* Bottom copyright row */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-8 text-xs text-[#A3A3A3]">
+          <div>
             © 2026 Navjot Singh. All rights reserved.
-          </p>
+          </div>
 
-          <p className="flex items-center gap-1.5 text-xs text-neutral-500">
-            Designed & Built with
-            <Heart
-              size={13}
-              className="fill-[#FF6B2C] text-[#FF6B2C]"
-            />
-            by Navjot
-          </p>
+          <div className="flex items-center gap-1.5">
+            Designed &amp; Built with{" "}
+            <Heart size={13} className="fill-[#FF6B00] text-[#FF6B00]" /> by Navjot
+          </div>
 
-          <a
-            href="#home"
+          {/* Back to top circular button */}
+          <button
+            onClick={scrollToTop}
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-[#0B1420] text-[#A3A3A3] transition-all hover:border-[#FF6B00] hover:text-[#FF6B00] hover:shadow-[0_0_15px_rgba(255,107,0,0.3)]"
             aria-label="Back to top"
-            className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-[#141414] text-neutral-400 transition-all hover:border-[#FF6B2C] hover:text-[#FF6B2C]"
           >
-            <ArrowUp size={18} />
-          </a>
+            <ArrowUp size={16} />
+          </button>
         </div>
 
       </div>

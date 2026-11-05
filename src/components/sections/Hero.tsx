@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import Image from "next/image";
-import { ArrowRight, Play, Mail, Mouse } from "lucide-react";
+import { ArrowRight, Play, Mail } from "lucide-react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { PORTFOLIO_IMAGES } from "@/lib/images";
@@ -14,6 +14,7 @@ export default function Hero() {
   const bgImageRef = useRef<HTMLDivElement>(null);
   const leftContentRef = useRef<HTMLDivElement>(null);
   const floatingCubesRef = useRef<HTMLDivElement>(null);
+  const scrollIndicatorRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
@@ -22,62 +23,136 @@ export default function Hero() {
     if (isReduced) return;
 
     const ctx = gsap.context(() => {
-      // Background slow parallax scrub
+      // 1. Entrance timeline
+      const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
+
+      tl.from(".hero-badge", {
+        opacity: 0,
+        y: -20,
+        duration: 0.8,
+      })
+      .from(".hero-title-main", {
+        opacity: 0,
+        y: 45,
+        duration: 1,
+      }, "-=0.5")
+      .from(".hero-role", {
+        opacity: 0,
+        y: 30,
+        duration: 0.8,
+      }, "-=0.6")
+      .from(".hero-desc", {
+        opacity: 0,
+        y: 25,
+        duration: 0.8,
+      }, "-=0.6")
+      .from(".hero-cta-btn", {
+        opacity: 0,
+        scale: 0.9,
+        y: 20,
+        stagger: 0.12,
+        duration: 0.7,
+        ease: "back.out(1.5)",
+      }, "-=0.5")
+      .from(".hero-social-item", {
+        opacity: 0,
+        y: 15,
+        stagger: 0.08,
+        duration: 0.6,
+      }, "-=0.4")
+      .from(floatingCubesRef.current, {
+        opacity: 0,
+        scale: 0.8,
+        duration: 1.2,
+      }, "-=1")
+      .from(scrollIndicatorRef.current, {
+        opacity: 0,
+        y: 20,
+        duration: 0.8,
+      }, "-=0.6");
+
+      // 2. Parallax & Exit Scrub when scrolling out of Hero
+      // Background moves at slower speed
       if (bgImageRef.current) {
         gsap.to(bgImageRef.current, {
-          yPercent: 20,
-          scale: 1.05,
+          yPercent: 35,
+          scale: 1.12,
           ease: "none",
           scrollTrigger: {
             trigger: heroRef.current,
             start: "top top",
             end: "bottom top",
-            scrub: true,
+            scrub: 0.5,
           },
         });
       }
 
-      // Left content parallax shift
+      // Foreground content leaves hero faster with fade-out
       if (leftContentRef.current) {
         gsap.to(leftContentRef.current, {
-          yPercent: 12,
-          opacity: 0.8,
+          y: -120,
+          opacity: 0,
+          scale: 0.94,
           ease: "none",
           scrollTrigger: {
             trigger: heroRef.current,
             start: "top top",
-            end: "bottom top",
+            end: "80% top",
+            scrub: 0.3,
+          },
+        });
+      }
+
+      // Scroll indicator fades out quickly on scroll
+      if (scrollIndicatorRef.current) {
+        gsap.to(scrollIndicatorRef.current, {
+          opacity: 0,
+          y: -30,
+          ease: "none",
+          scrollTrigger: {
+            trigger: heroRef.current,
+            start: "top top",
+            end: "30% top",
             scrub: true,
           },
         });
       }
 
-      // Floating cubes independent parallax
+      // Floating cubes move at varied individual parallax speeds for multi-layer depth
       if (floatingCubesRef.current) {
         const cubes = floatingCubesRef.current.querySelectorAll(".parallax-cube");
         cubes.forEach((cube, i) => {
           gsap.to(cube, {
-            yPercent: (i + 1) * -15,
-            rotateZ: (i % 2 === 0 ? 1 : -1) * 20,
+            yPercent: (i + 1) * -35,
+            rotateZ: (i % 2 === 0 ? 1 : -1) * 35,
+            opacity: 0.2,
             ease: "none",
             scrollTrigger: {
               trigger: heroRef.current,
               start: "top top",
               end: "bottom top",
-              scrub: 1 + i * 0.4,
+              scrub: 0.8 + i * 0.3,
             },
           });
         });
       }
 
-      // Initial entrance reveal
-      gsap.from(".hero-reveal", {
-        opacity: 0,
-        y: 30,
-        stagger: 0.12,
-        duration: 1,
-        ease: "power3.out",
-      });
+      // 3. Subtle mouse move parallax for interactive 3D depth
+      const handleMouseMove = (e: MouseEvent) => {
+        const { clientX, clientY } = e;
+        const xPos = (clientX / window.innerWidth - 0.5) * 20;
+        const yPos = (clientY / window.innerHeight - 0.5) * 20;
+
+        gsap.to(floatingCubesRef.current, {
+          x: xPos * 1.5,
+          y: yPos * 1.5,
+          duration: 1,
+          ease: "power1.out",
+        });
+      };
+
+      window.addEventListener("mousemove", handleMouseMove);
+      return () => window.removeEventListener("mousemove", handleMouseMove);
     }, heroRef);
 
     return () => ctx.revert();
@@ -89,10 +164,10 @@ export default function Hero() {
       ref={heroRef}
       className="relative flex min-h-screen w-full items-center overflow-hidden bg-[#05080D] pt-24 pb-16"
     >
-      {/* BACKGROUND IMAGE WITH CINEMATIC MASKS & GRADIENTS */}
+      {/* BACKGROUND IMAGE WITH MULTI-LAYER CINEMATIC MASKS */}
       <div
         ref={bgImageRef}
-        className="pointer-events-none absolute inset-0 z-0 select-none overflow-hidden"
+        className="pointer-events-none absolute inset-0 z-0 select-none overflow-hidden will-change-transform"
       >
         <Image
           src={PORTFOLIO_IMAGES.heroTunnel}
@@ -100,31 +175,31 @@ export default function Hero() {
           fill
           priority
           sizes="100vw"
-          className="object-cover object-right-top opacity-55 lg:opacity-75 filter brightness-95 contrast-110"
+          className="object-cover object-right-top opacity-60 lg:opacity-80 filter brightness-95 contrast-110"
         />
-        {/* Layered dark gradients for seamless blending */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#05080D] via-[#05080D]/70 to-transparent" />
+        {/* Layered dark gradients for seamless blending into next sections */}
+        <div className="absolute inset-0 bg-gradient-to-r from-[#05080D] via-[#05080D]/75 to-transparent" />
         <div className="absolute inset-0 bg-gradient-to-t from-[#05080D] via-[#05080D]/40 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#05080D]/80 via-transparent to-[#05080D]" />
-        
+        <div className="absolute inset-0 bg-gradient-to-b from-[#05080D]/90 via-transparent to-[#05080D]" />
+
         {/* Ambient colored lighting glows */}
-        <div className="absolute top-1/4 right-1/4 h-[420px] w-[420px] rounded-full bg-[#008CFF]/20 blur-[130px]" />
-        <div className="absolute bottom-1/4 right-1/3 h-[380px] w-[380px] rounded-full bg-[#FF6B00]/15 blur-[120px]" />
+        <div className="absolute top-1/4 right-1/4 h-[450px] w-[450px] rounded-full bg-[#008CFF]/20 blur-[130px]" />
+        <div className="absolute bottom-1/4 right-1/3 h-[400px] w-[400px] rounded-full bg-[#FF6B00]/15 blur-[120px]" />
       </div>
 
       {/* FLOATING GLOWING CUBES LAYER */}
       <div
         ref={floatingCubesRef}
-        className="pointer-events-none absolute inset-0 z-10 overflow-hidden"
+        className="pointer-events-none absolute inset-0 z-10 overflow-hidden will-change-transform"
       >
         {/* Cube 1: Orange glow cube top right */}
-        <div className="parallax-cube animate-float-slow absolute top-[18%] right-[18%] h-16 w-16 rounded-xl border border-[#FF6B00]/60 bg-[#FF6B00]/10 backdrop-blur-md shadow-[0_0_25px_rgba(255,107,0,0.5)]" />
-        
+        <div className="parallax-cube animate-float-slow absolute top-[18%] right-[18%] h-16 w-16 rounded-xl border border-[#FF6B00]/60 bg-[#FF6B00]/15 backdrop-blur-md shadow-[0_0_25px_rgba(255,107,0,0.5)]" />
+
         {/* Cube 2: Cyan electric cube middle right */}
-        <div className="parallax-cube animate-float-delayed absolute top-[45%] right-[8%] h-24 w-24 rounded-2xl border border-[#008CFF]/60 bg-[#008CFF]/10 backdrop-blur-md shadow-[0_0_35px_rgba(0,140,255,0.4)]" />
+        <div className="parallax-cube animate-float-delayed absolute top-[45%] right-[8%] h-24 w-24 rounded-2xl border border-[#008CFF]/60 bg-[#008CFF]/15 backdrop-blur-md shadow-[0_0_35px_rgba(0,140,255,0.45)]" />
 
         {/* Cube 3: Small orange cube bottom right */}
-        <div className="parallax-cube animate-float-slow absolute bottom-[22%] right-[26%] h-12 w-12 rounded-lg border border-[#FF6B00]/50 bg-[#FF6B00]/10 backdrop-blur-sm shadow-[0_0_20px_rgba(255,107,0,0.4)]" />
+        <div className="parallax-cube animate-float-slow absolute bottom-[22%] right-[26%] h-12 w-12 rounded-lg border border-[#FF6B00]/50 bg-[#FF6B00]/15 backdrop-blur-sm shadow-[0_0_20px_rgba(255,107,0,0.4)]" />
 
         {/* Cube 4: Electric blue cube center right */}
         <div className="parallax-cube animate-float-delayed absolute top-[28%] right-[38%] h-10 w-10 rounded-lg border border-[#008CFF]/50 bg-[#008CFF]/15 backdrop-blur-sm shadow-[0_0_20px_rgba(0,140,255,0.4)]" />
@@ -135,10 +210,13 @@ export default function Hero() {
         <div className="absolute bottom-[35%] right-[15%] h-2 w-2 rounded-full bg-[#008CFF] shadow-[0_0_10px_#008CFF]" />
       </div>
 
-      {/* VERTICAL SCROLL DOWN INDICATOR (as seen in reference design screenshot) */}
-      <div className="hidden lg:flex fixed left-8 bottom-16 z-30 flex-col items-center gap-3 select-none">
-        <div className="flex h-11 w-6 items-start justify-center rounded-full border border-white/20 bg-[#080F19]/60 p-1 backdrop-blur-md shadow-[0_0_15px_rgba(0,140,255,0.2)]">
-          <span className="h-2 w-1 animate-bounce rounded-full bg-[#FF6B00] shadow-[0_0_8px_#FF6B00]" />
+      {/* VERTICAL SCROLL DOWN INDICATOR */}
+      <div
+        ref={scrollIndicatorRef}
+        className="hidden lg:flex fixed left-8 bottom-14 z-30 flex-col items-center gap-3 select-none will-change-transform"
+      >
+        <div className="flex h-11 w-6 items-start justify-center rounded-full border border-white/20 bg-[#080F19]/80 p-1 backdrop-blur-md shadow-[0_0_15px_rgba(0,140,255,0.2)]">
+          <span className="h-2.5 w-1 animate-bounce rounded-full bg-[#FF6B00] shadow-[0_0_8px_#FF6B00]" />
         </div>
         <span
           className="text-[10px] tracking-[0.3em] font-semibold text-neutral-400 uppercase"
@@ -151,12 +229,12 @@ export default function Hero() {
       {/* MAIN CONTAINER */}
       <div className="relative z-20 mx-auto w-full max-w-7xl px-6 lg:px-16">
         <div className="grid items-center gap-12 lg:grid-cols-12">
-          
+
           {/* LEFT CONTENT */}
-          <div ref={leftContentRef} className="lg:col-span-7 xl:col-span-7 space-y-6">
-            
+          <div ref={leftContentRef} className="lg:col-span-7 xl:col-span-7 space-y-6 will-change-transform">
+
             {/* Small greeting */}
-            <div className="hero-reveal inline-flex items-center gap-2.5 rounded-full border border-[#FF6B00]/30 bg-[#FF6B00]/10 px-4 py-1.5 backdrop-blur-md">
+            <div className="hero-badge inline-flex items-center gap-2.5 rounded-full border border-[#FF6B00]/30 bg-[#FF6B00]/10 px-4 py-1.5 backdrop-blur-md">
               <span className="h-2 w-2 rounded-full bg-[#FF6B00] shadow-[0_0_8px_#FF6B00]" />
               <span className="text-xs font-semibold tracking-wider text-neutral-300 uppercase">
                 Hello, I&apos;m
@@ -164,26 +242,26 @@ export default function Hero() {
             </div>
 
             {/* Main heading */}
-            <h1 className="hero-reveal text-5xl font-black tracking-tight text-white sm:text-6xl md:text-7xl lg:text-7xl xl:text-8xl leading-[1.05]">
+            <h1 className="hero-title-main text-5xl font-black tracking-tight text-white sm:text-6xl md:text-7xl lg:text-7xl xl:text-8xl leading-[1.05]">
               Navjot <span className="text-[#FF6B00] text-glow-orange">Singh</span>
             </h1>
 
             {/* Role */}
-            <div className="hero-reveal text-2xl font-bold tracking-tight text-neutral-200 sm:text-3xl md:text-4xl">
+            <div className="hero-role text-2xl font-bold tracking-tight text-neutral-200 sm:text-3xl md:text-4xl">
               Full Stack{" "}
               <span className="text-[#FF6B00]">Developer</span>
             </div>
 
             {/* Description */}
-            <p className="hero-reveal max-w-xl text-base leading-relaxed text-[#A3A3A3] sm:text-lg">
+            <p className="hero-desc max-w-xl text-base leading-relaxed text-[#A3A3A3] sm:text-lg">
               Building modern digital experiences with creativity and technology.
             </p>
 
             {/* CTA Buttons */}
-            <div className="hero-reveal flex flex-wrap items-center gap-4 pt-2">
+            <div className="flex flex-wrap items-center gap-4 pt-2">
               <a
                 href="#projects"
-                className="group relative inline-flex items-center gap-3 overflow-hidden rounded-full bg-[#FF6B00] px-8 py-3.5 text-base font-bold text-black shadow-[0_0_30px_rgba(255,107,0,0.4)] transition-all duration-300 hover:scale-105 hover:bg-[#FF7A1A] hover:shadow-[0_0_45px_rgba(255,107,0,0.7)]"
+                className="hero-cta-btn group relative inline-flex items-center gap-3 overflow-hidden rounded-full bg-[#FF6B00] px-8 py-3.5 text-base font-bold text-black shadow-[0_0_30px_rgba(255,107,0,0.4)] transition-all duration-300 hover:scale-105 hover:bg-[#FF7A1A] hover:shadow-[0_0_45px_rgba(255,107,0,0.7)]"
               >
                 <span>View My Projects</span>
                 <ArrowRight
@@ -194,7 +272,7 @@ export default function Hero() {
 
               <a
                 href="#about"
-                className="group inline-flex items-center gap-2.5 rounded-full border border-white/20 bg-[#0B1420]/80 px-7 py-3.5 text-base font-semibold text-white backdrop-blur-md transition-all duration-300 hover:border-[#FF6B00]/60 hover:bg-[#0B1420] hover:text-[#FF6B00] hover:shadow-[0_0_20px_rgba(255,107,0,0.2)]"
+                className="hero-cta-btn group inline-flex items-center gap-2.5 rounded-full border border-white/20 bg-[#0B1420]/80 px-7 py-3.5 text-base font-semibold text-white backdrop-blur-md transition-all duration-300 hover:border-[#FF6B00]/60 hover:bg-[#0B1420] hover:text-[#FF6B00] hover:shadow-[0_0_20px_rgba(255,107,0,0.2)]"
               >
                 <span>About Me</span>
                 <Play
@@ -205,12 +283,12 @@ export default function Hero() {
             </div>
 
             {/* Social links row */}
-            <div className="hero-reveal flex items-center gap-4 pt-4">
+            <div className="flex items-center gap-4 pt-4">
               <a
                 href={SOCIAL_LINKS.github}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-[#080F19]/80 text-[#A3A3A3] backdrop-blur-md transition-all duration-300 hover:border-[#FF6B00]/60 hover:bg-[#0B1420] hover:text-[#FF6B00] hover:shadow-[0_0_15px_rgba(255,107,0,0.3)]"
+                className="hero-social-item group flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-[#080F19]/80 text-[#A3A3A3] backdrop-blur-md transition-all duration-300 hover:border-[#FF6B00]/60 hover:bg-[#0B1420] hover:text-[#FF6B00] hover:shadow-[0_0_15px_rgba(255,107,0,0.3)]"
                 aria-label="GitHub Profile"
               >
                 <GithubIcon className="h-5 w-5 transition-transform duration-300 group-hover:scale-110" />
@@ -220,7 +298,7 @@ export default function Hero() {
                 href={SOCIAL_LINKS.linkedin}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-[#080F19]/80 text-[#A3A3A3] backdrop-blur-md transition-all duration-300 hover:border-[#008CFF]/60 hover:bg-[#0B1420] hover:text-[#008CFF] hover:shadow-[0_0_15px_rgba(0,140,255,0.3)]"
+                className="hero-social-item group flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-[#080F19]/80 text-[#A3A3A3] backdrop-blur-md transition-all duration-300 hover:border-[#008CFF]/60 hover:bg-[#0B1420] hover:text-[#008CFF] hover:shadow-[0_0_15px_rgba(0,140,255,0.3)]"
                 aria-label="LinkedIn Profile"
               >
                 <LinkedinIcon className="h-5 w-5 transition-transform duration-300 group-hover:scale-110" />
@@ -228,7 +306,7 @@ export default function Hero() {
 
               <a
                 href={`mailto:${SOCIAL_LINKS.email}`}
-                className="group flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-[#080F19]/80 text-[#A3A3A3] backdrop-blur-md transition-all duration-300 hover:border-[#FF6B00]/60 hover:bg-[#0B1420] hover:text-[#FF6B00] hover:shadow-[0_0_15px_rgba(255,107,0,0.3)]"
+                className="hero-social-item group flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-[#080F19]/80 text-[#A3A3A3] backdrop-blur-md transition-all duration-300 hover:border-[#FF6B00]/60 hover:bg-[#0B1420] hover:text-[#FF6B00] hover:shadow-[0_0_15px_rgba(255,107,0,0.3)]"
                 aria-label="Send an email"
               >
                 <Mail size={18} className="transition-transform duration-300 group-hover:scale-110" />
@@ -237,7 +315,7 @@ export default function Hero() {
 
           </div>
 
-          {/* RIGHT SIDE: Viewport area showcasing the 3D perspective depth */}
+          {/* RIGHT SIDE: Viewport area showcasing 3D perspective depth */}
           <div className="lg:col-span-5 hidden lg:block" />
         </div>
       </div>

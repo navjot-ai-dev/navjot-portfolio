@@ -1,244 +1,336 @@
 "use client";
 
+import { useEffect, useRef } from "react";
+import Image from "next/image";
 import {
   Code2,
-  Layers3,
-  Rocket,
+  Palette,
+  Zap,
+  GraduationCap,
   Sparkles,
-  ArrowUpRight,
-  Terminal,
+  Calendar,
+  Trophy,
 } from "lucide-react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { PORTFOLIO_IMAGES } from "@/lib/images";
 
-const highlights = [
+const highlightCards = [
   {
     icon: Code2,
     title: "Clean Code",
-    description:
-      "Writing maintainable, scalable and efficient code with attention to detail.",
-    tag: "CODE QUALITY",
-    className: "md:col-span-2",
+    desc: "Writing maintainable, scalable, and modern TypeScript & React code.",
   },
   {
-    icon: Rocket,
-    title: "Build & Ship",
-    description:
-      "Turning ideas into practical digital products.",
-    tag: "EXECUTION",
-    className: "md:col-span-1",
+    icon: Palette,
+    title: "Creative Design",
+    desc: "Crafting intuitive, futuristic, and memorable user interfaces.",
   },
   {
-    icon: Layers3,
-    title: "Full Stack Thinking",
-    description:
-      "Exploring frontend, backend, databases and complete application architecture.",
-    tag: "DEVELOPMENT",
-    className: "md:col-span-1",
+    icon: Zap,
+    title: "Fast Performance",
+    desc: "Optimizing web performance, load speed, and snappy interactions.",
   },
+  {
+    icon: GraduationCap,
+    title: "Always Learning",
+    desc: "Constantly exploring full-stack ecosystems, auth, and backend tooling.",
+  },
+];
+
+const stats = [
   {
     icon: Sparkles,
-    title: "Always Learning",
-    description:
-      "Exploring new technologies, improving my skills and learning by building real-world projects.",
-    tag: "GROWTH MINDSET",
-    className: "md:col-span-2",
+    value: "1+",
+    label: "Years Experience",
+  },
+  {
+    icon: Calendar,
+    value: "10+",
+    label: "Projects Completed",
+  },
+  {
+    icon: Trophy,
+    value: "100%",
+    label: "Dedication",
   },
 ];
 
 export default function About() {
+  const sectionRef = useRef<HTMLElement>(null);
+  const sphereWrapperRef = useRef<HTMLDivElement>(null);
+  const sphereImgRef = useRef<HTMLDivElement>(null);
+  const textContainerRef = useRef<HTMLDivElement>(null);
+  const bgGlowLeftRef = useRef<HTMLDivElement>(null);
+  const bgGlowRightRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    gsap.registerPlugin(ScrollTrigger);
+
+    const isReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (isReduced) return;
+
+    const ctx = gsap.context(() => {
+      // 1. Background & Foreground move at different speeds (Parallax)
+      if (bgGlowLeftRef.current) {
+        gsap.to(bgGlowLeftRef.current, {
+          yPercent: -25,
+          scale: 1.15,
+          ease: "none",
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "top bottom",
+            end: "bottom top",
+            scrub: 1,
+          },
+        });
+      }
+
+      if (bgGlowRightRef.current) {
+        gsap.to(bgGlowRightRef.current, {
+          yPercent: 30,
+          scale: 0.9,
+          ease: "none",
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "top bottom",
+            end: "bottom top",
+            scrub: 1.2,
+          },
+        });
+      }
+
+      // 2. Metallic sphere smoothly scales into view with ScrollTrigger
+      if (sphereWrapperRef.current) {
+        gsap.fromTo(
+          sphereWrapperRef.current,
+          {
+            scale: 0.72,
+            opacity: 0,
+            y: 60,
+          },
+          {
+            scale: 1,
+            opacity: 1,
+            y: 0,
+            duration: 1.2,
+            ease: "power3.out",
+            scrollTrigger: {
+              trigger: sectionRef.current,
+              start: "top 75%",
+              end: "top 35%",
+              scrub: 0.6,
+            },
+          }
+        );
+      }
+
+      // Sphere image continuous parallax rotation
+      if (sphereImgRef.current) {
+        gsap.to(sphereImgRef.current, {
+          rotateZ: 15,
+          yPercent: -12,
+          ease: "none",
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "top bottom",
+            end: "bottom top",
+            scrub: 1.5,
+          },
+        });
+      }
+
+      // 3. Text reveals line by line
+      const textLines = gsap.utils.toArray<HTMLElement>(".about-text-reveal");
+      gsap.fromTo(
+        textLines,
+        {
+          opacity: 0,
+          y: 40,
+        },
+        {
+          opacity: 1,
+          y: 0,
+          stagger: 0.14,
+          duration: 0.9,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: textContainerRef.current,
+            start: "top 80%",
+          },
+        }
+      );
+
+      // 4. Stats row entrance
+      gsap.fromTo(
+        ".about-stat-item",
+        {
+          opacity: 0,
+          y: 25,
+          scale: 0.9,
+        },
+        {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          stagger: 0.1,
+          duration: 0.7,
+          ease: "back.out(1.4)",
+          scrollTrigger: {
+            trigger: textContainerRef.current,
+            start: "top 70%",
+          },
+        }
+      );
+
+      // 5. About cards appear one after another
+      gsap.fromTo(
+        ".about-card",
+        {
+          opacity: 0,
+          y: 45,
+          scale: 0.92,
+        },
+        {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          stagger: 0.12,
+          duration: 0.8,
+          ease: "power2.out",
+          scrollTrigger: {
+            trigger: ".about-cards-container",
+            start: "top 85%",
+          },
+        }
+      );
+    }, sectionRef);
+
+    return () => ctx.revert();
+  }, []);
+
   return (
     <section
       id="about"
-      className="relative overflow-hidden bg-[#0B0B0B] px-6 py-28"
+      ref={sectionRef}
+      className="relative overflow-hidden bg-[#080F19] py-28 px-6 lg:px-16"
     >
+      {/* Background ambient lighting with parallax refs */}
+      <div
+        ref={bgGlowLeftRef}
+        className="pointer-events-none absolute -left-48 top-1/4 h-[520px] w-[520px] rounded-full bg-[#008CFF]/15 blur-[140px] will-change-transform"
+      />
+      <div
+        ref={bgGlowRightRef}
+        className="pointer-events-none absolute -right-36 bottom-10 h-[480px] w-[480px] rounded-full bg-[#FF6B00]/12 blur-[130px] will-change-transform"
+      />
+
       <div className="mx-auto max-w-7xl">
+        <div className="grid items-center gap-14 lg:grid-cols-12">
 
-        {/* Section Heading */}
+          {/* LEFT: Metallic Futuristic Sphere Visual */}
+          <div className="lg:col-span-5 relative flex items-center justify-center">
+            <div
+              ref={sphereWrapperRef}
+              className="relative aspect-square w-full max-w-[480px] select-none will-change-transform"
+            >
+              {/* Outer glowing orbital rings with parallax spin */}
+              <div className="absolute inset-0 rounded-full border border-[#008CFF]/30 shadow-[0_0_50px_rgba(0,140,255,0.25)] animate-spin-slow" />
+              <div className="absolute inset-6 rounded-full border border-[#FF6B00]/25 shadow-[0_0_40px_rgba(255,107,0,0.2)]" />
 
-        <div className="mb-16">
-
-          <p className="mb-4 flex items-center gap-3 text-sm font-semibold uppercase tracking-[0.3em] text-[#FF6B2C]">
-            <span className="h-px w-8 bg-[#FF6B2C]" />
-            Get To Know Me
-          </p>
-
-          <h2 className="text-4xl font-bold tracking-tight text-white sm:text-6xl">
-            Beyond The
-            <span className="text-[#FF6B2C]"> Code.</span>
-          </h2>
-
-          <p className="mt-5 max-w-2xl leading-8 text-gray-400">
-            A little introduction about who I am, what I do
-            and what drives me to build digital experiences.
-          </p>
-
-        </div>
-
-        {/* Main About Grid */}
-
-        <div className="grid gap-6 lg:grid-cols-5">
-
-          {/* Personal Introduction */}
-
-          <div className="group relative overflow-hidden rounded-3xl border border-white/10 bg-[#141414] p-8 transition-all duration-300 hover:border-[#FF6B2C]/40 lg:col-span-3">
-
-            <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-orange-500/10 blur-[90px] transition-all duration-500 group-hover:bg-orange-500/20" />
-
-            <div className="relative">
-
-              <div className="mb-8 flex items-center gap-3">
-
-                <div className="rounded-xl border border-orange-500/20 bg-orange-500/10 p-3 text-[#FF6B2C]">
-                  <Terminal size={23} />
-                </div>
-
-                <span className="text-sm font-medium text-gray-400">
-                  ABOUT ME
-                </span>
-
-              </div>
-
-              <h3 className="max-w-xl text-3xl font-bold leading-tight text-white sm:text-4xl">
-                I'm Navjot Singh,
-                <span className="text-gray-500">
-                  {" "}a developer who loves turning ideas into reality.
-                </span>
-              </h3>
-
-              <p className="mt-7 max-w-xl text-base leading-8 text-gray-400">
-                I'm passionate about web development and creating
-                modern digital experiences. My journey started with
-                frontend development, and I'm now expanding my
-                knowledge towards full-stack engineering.
-              </p>
-
-              <p className="mt-5 max-w-xl text-base leading-8 text-gray-400">
-                I enjoy experimenting with technologies, solving
-                problems and building projects that combine great
-                functionality with thoughtful design.
-              </p>
-
-              <a
-                href="#projects"
-                className="mt-9 inline-flex items-center gap-2 text-sm font-semibold text-[#FF6B2C] transition-all hover:gap-4"
-              >
-                Explore My Projects
-                <ArrowUpRight size={17} />
-              </a>
-
-            </div>
-
-          </div>
-
-          {/* Developer Identity Card */}
-
-          <div className="relative flex flex-col justify-between overflow-hidden rounded-3xl border border-white/10 bg-[#141414] p-8 lg:col-span-2">
-
-            <div className="absolute -bottom-20 -right-20 h-64 w-64 rounded-full bg-orange-500/10 blur-[90px]" />
-
-            <div className="relative">
-
-              <div className="mb-8 flex items-center justify-between">
-
-                <span className="text-sm font-medium text-gray-400">
-                  DEVELOPER IDENTITY
-                </span>
-
-                <Code2 className="text-[#FF6B2C]" size={24} />
-
-              </div>
-
-              <div className="mb-8 flex h-24 w-24 items-center justify-center rounded-3xl border border-orange-500/20 bg-orange-500/10">
-
-                <span className="text-4xl font-bold text-[#FF6B2C]">
-                  NS
-                </span>
-
-              </div>
-
-              <h3 className="text-2xl font-bold text-white">
-                Navjot Singh
-              </h3>
-
-              <p className="mt-2 text-sm text-[#FF6B2C]">
-                Full Stack Developer
-              </p>
-
-              <div className="mt-8 h-px bg-white/10" />
-
-              <div className="mt-6 space-y-4 text-sm">
-
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Focus</span>
-                  <span className="text-gray-200">Web Development</span>
-                </div>
-
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Approach</span>
-                  <span className="text-gray-200">Learn by Building</span>
-                </div>
-
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Mindset</span>
-                  <span className="text-gray-200">Growth Oriented</span>
-                </div>
-
-              </div>
-
-            </div>
-
-          </div>
-
-        </div>
-
-        {/* Philosophy */}
-
-        <div className="mt-6 grid gap-6 md:grid-cols-3">
-
-          {highlights.map((item, index) => {
-            const Icon = item.icon;
-
-            return (
+              {/* Sphere image container */}
               <div
-                key={item.title}
-                className={`${item.className} group relative overflow-hidden rounded-3xl border border-white/10 bg-[#141414] p-8 transition-all duration-300 hover:-translate-y-1 hover:border-[#FF6B2C]/40`}
+                ref={sphereImgRef}
+                className="relative h-full w-full overflow-hidden rounded-full p-2 will-change-transform"
               >
+                <Image
+                  src={PORTFOLIO_IMAGES.aboutSphere}
+                  alt="Metallic Futuristic Holographic Sphere"
+                  fill
+                  sizes="(max-width: 768px) 100vw, 480px"
+                  className="object-contain filter drop-shadow-[0_0_35px_rgba(0,140,255,0.4)] transition-transform duration-700 hover:scale-105"
+                />
+              </div>
 
-                <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-orange-500/0 blur-3xl transition-all duration-500 group-hover:bg-orange-500/10" />
+              {/* Holographic light accent */}
+              <div className="absolute -bottom-4 left-1/2 h-8 w-3/4 -translate-x-1/2 rounded-full bg-gradient-to-r from-transparent via-[#008CFF]/40 to-transparent blur-md" />
+            </div>
+          </div>
 
-                <div className="relative">
+          {/* RIGHT: About Details & Glassmorphism Cards */}
+          <div ref={textContainerRef} className="lg:col-span-7 space-y-8">
 
-                  <div className="mb-7 flex items-center justify-between">
+            {/* Header info (line by line reveal) */}
+            <div>
+              <div className="about-text-reveal inline-flex items-center gap-2 rounded-full border border-[#FF6B00]/30 bg-[#FF6B00]/10 px-4 py-1.5 text-xs font-semibold tracking-wider text-[#FF6B00] uppercase">
+                About Me —
+              </div>
 
-                    <div className="rounded-xl border border-orange-500/20 bg-orange-500/10 p-3 text-[#FF6B2C]">
-                      <Icon size={23} />
+              <h2 className="about-text-reveal mt-4 text-3xl font-extrabold tracking-tight text-white sm:text-4xl md:text-5xl leading-tight">
+                Passionate <span className="text-[#FF6B00]">Developer</span> & Problem{" "}
+                <span className="text-[#FF6B00]">Solver</span>
+              </h2>
+
+              <p className="about-text-reveal mt-5 text-base sm:text-lg leading-relaxed text-[#A3A3A3]">
+                I&apos;m a Full Stack Developer who loves turning ideas into reality.
+                I enjoy building scalable web applications, exploring new technologies,
+                and learning every day.
+              </p>
+            </div>
+
+            {/* Stats row (from reference) */}
+            <div className="grid grid-cols-3 gap-4 border-y border-white/10 py-5">
+              {stats.map((stat, i) => {
+                const Icon = stat.icon;
+                return (
+                  <div key={i} className="about-stat-item flex flex-col items-start gap-1">
+                    <div className="flex items-center gap-1.5 text-[#FF6B00]">
+                      <Icon size={18} />
+                      <span className="text-xl sm:text-2xl font-black text-white">
+                        {stat.value}
+                      </span>
+                    </div>
+                    <span className="text-xs text-[#A3A3A3] font-medium">
+                      {stat.label}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Four Glassmorphism Cards */}
+            <div className="about-cards-container grid gap-4 sm:grid-cols-2">
+              {highlightCards.map((card, i) => {
+                const Icon = card.icon;
+                return (
+                  <div
+                    key={i}
+                    className="about-card group relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0B1420]/80 p-5 backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:border-[#FF6B00]/60 hover:shadow-[0_0_25px_rgba(255,107,0,0.25)] will-change-transform"
+                  >
+                    <div className="flex items-start gap-3.5">
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#FF6B00]/30 bg-[#FF6B00]/10 text-[#FF6B00] shadow-[0_0_12px_rgba(255,107,0,0.2)] transition-all duration-300 group-hover:scale-110 group-hover:bg-[#FF6B00] group-hover:text-black">
+                        <Icon size={20} />
+                      </div>
+                      <div>
+                        <h3 className="text-base font-bold text-white transition-colors group-hover:text-[#FF6B00]">
+                          {card.title}
+                        </h3>
+                        <p className="mt-1 text-xs leading-relaxed text-[#A3A3A3]">
+                          {card.desc}
+                        </p>
+                      </div>
                     </div>
 
-                    <span className="text-[10px] tracking-[0.2em] text-gray-600">
-                      0{index + 1}
-                    </span>
-
+                    {/* Subtle corner light line */}
+                    <div className="absolute -right-8 -top-8 h-16 w-16 rounded-full bg-[#FF6B00]/10 blur-xl transition-all duration-500 group-hover:bg-[#FF6B00]/25" />
                   </div>
+                );
+              })}
+            </div>
 
-                  <h3 className="text-xl font-bold text-white">
-                    {item.title}
-                  </h3>
-
-                  <p className="mt-3 max-w-md text-sm leading-7 text-gray-400">
-                    {item.description}
-                  </p>
-
-                  <p className="mt-7 text-[10px] font-semibold tracking-[0.2em] text-[#FF6B2C]">
-                    {item.tag}
-                  </p>
-
-                </div>
-
-              </div>
-            );
-          })}
+          </div>
 
         </div>
-
       </div>
     </section>
   );

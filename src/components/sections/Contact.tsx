@@ -1,27 +1,34 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
+import Image from "next/image";
 import {
-  ArrowUpRight,
-  Check,
-  Copy,
   Mail,
   Send,
-  MessageCircle,
-  Code2,
-  BriefcaseBusiness,
+  Copy,
+  Check,
 } from "lucide-react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { PORTFOLIO_IMAGES } from "@/lib/images";
+import { SOCIAL_LINKS } from "@/lib/constants";
+import { GithubIcon, LinkedinIcon } from "@/components/ui/Icons";
 
 const EMAIL = "navjotsingh542419@gmail.com";
 
 export default function Contact() {
   const [copied, setCopied] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const sectionRef = useRef<HTMLElement>(null);
+  const headerRef = useRef<HTMLDivElement>(null);
+  const holoEmailRef = useRef<HTMLDivElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+  const cardsRef = useRef<HTMLDivElement>(null);
 
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(EMAIL);
       setCopied(true);
-
       setTimeout(() => setCopied(false), 2000);
     } catch {
       window.location.href = `mailto:${EMAIL}`;
@@ -30,256 +37,340 @@ export default function Contact() {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setIsSubmitting(true);
 
     const formData = new FormData(e.currentTarget);
+    const name = formData.get("name") || "";
+    const email = formData.get("email") || "";
+    const subject = formData.get("subject") || "Portfolio Inquiry";
+    const message = formData.get("message") || "";
 
-    const name = formData.get("name");
-    const email = formData.get("email");
-    const subject = formData.get("subject");
-    const message = formData.get("message");
-
-    const body = `
-Name: ${name}
-Email: ${email}
-
-Message:
-${message}
-`;
-
+    const body = `Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`;
     const mailtoLink = `mailto:${EMAIL}?subject=${encodeURIComponent(
       String(subject)
     )}&body=${encodeURIComponent(body)}`;
 
-    window.location.href = mailtoLink;
+    setTimeout(() => {
+      window.location.href = mailtoLink;
+      setIsSubmitting(false);
+    }, 300);
   };
+
+  useEffect(() => {
+    gsap.registerPlugin(ScrollTrigger);
+
+    const isReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (isReduced) return;
+
+    const ctx = gsap.context(() => {
+      // 1. Section Header entrance
+      if (headerRef.current) {
+        gsap.from(headerRef.current.children, {
+          opacity: 0,
+          y: 35,
+          stagger: 0.1,
+          duration: 0.8,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: headerRef.current,
+            start: "top 85%",
+          },
+        });
+      }
+
+      // 2. Email illustration smoothly reveals with scale and orbital glow
+      if (holoEmailRef.current) {
+        gsap.fromTo(
+          holoEmailRef.current,
+          {
+            scale: 0.78,
+            opacity: 0,
+            y: 50,
+            rotate: -4,
+          },
+          {
+            scale: 1,
+            opacity: 1,
+            y: 0,
+            rotate: 0,
+            duration: 1.1,
+            ease: "power3.out",
+            scrollTrigger: {
+              trigger: holoEmailRef.current,
+              start: "top 80%",
+            },
+          }
+        );
+
+        // Orbital trails scrub rotation on scroll
+        gsap.to(holoEmailRef.current, {
+          yPercent: -10,
+          ease: "none",
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "top bottom",
+            end: "bottom top",
+            scrub: 1.2,
+          },
+        });
+      }
+
+      // 3. Contact info cards entrance
+      if (cardsRef.current) {
+        gsap.from(cardsRef.current.children, {
+          opacity: 0,
+          y: 30,
+          stagger: 0.12,
+          duration: 0.8,
+          ease: "back.out(1.4)",
+          scrollTrigger: {
+            trigger: cardsRef.current,
+            start: "top 85%",
+          },
+        });
+      }
+
+      // 4. Contact form elements appear sequentially
+      if (formRef.current) {
+        const formElements = formRef.current.querySelectorAll(".form-step");
+        gsap.from(formElements, {
+          opacity: 0,
+          y: 25,
+          stagger: 0.08,
+          duration: 0.7,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: formRef.current,
+            start: "top 80%",
+          },
+        });
+      }
+    }, sectionRef);
+
+    return () => ctx.revert();
+  }, []);
 
   return (
     <section
       id="contact"
-      className="relative overflow-hidden bg-[#0B0B0B] px-6 py-28 text-white md:px-12"
+      ref={sectionRef}
+      className="relative overflow-hidden bg-[#080F19] py-28 px-6 lg:px-16"
     >
+      {/* Background ambient glows */}
+      <div className="pointer-events-none absolute -left-48 bottom-0 h-[450px] w-[450px] rounded-full bg-[#FF6B00]/12 blur-[140px]" />
+      <div className="pointer-events-none absolute -right-48 top-10 h-[500px] w-[500px] rounded-full bg-[#008CFF]/15 blur-[140px]" />
+
       <div className="mx-auto max-w-7xl">
 
         {/* Section Heading */}
-        <div className="mb-16">
-          <p className="mb-4 text-sm font-semibold uppercase tracking-[0.3em] text-[#FF6B2C]">
-            Get In Touch
-          </p>
+        <div ref={headerRef} className="max-w-2xl mb-16">
+          <div className="inline-flex items-center gap-2 rounded-full border border-[#FF6B00]/30 bg-[#FF6B00]/10 px-4 py-1.5 text-xs font-semibold tracking-wider text-[#FF6B00] uppercase">
+            Contact Me —
+          </div>
 
-          <h2 className="text-4xl font-bold tracking-tight md:text-6xl">
-            Let's Build Something{" "}
-            <span className="text-[#FF6B2C]">Great.</span>
+          <h2 className="mt-4 text-3xl font-extrabold tracking-tight text-white sm:text-4xl md:text-5xl leading-tight">
+            Let&apos;s Build <span className="text-[#FF6B00]">Something Great.</span>
           </h2>
 
-          <p className="mt-6 max-w-xl text-sm leading-7 text-neutral-400 md:text-base">
-            Have an idea, a project, or just want to connect? I'd love to hear
-            from you. Let's turn great ideas into reality.
+          <p className="mt-3 text-base text-[#A3A3A3]">
+            Have a project in mind? Feel free to reach out! I&apos;m always excited to discuss new ideas and opportunities.
           </p>
         </div>
 
-        <div className="grid gap-8 lg:grid-cols-[0.85fr_1.15fr]">
+        <div className="grid gap-12 lg:grid-cols-12 items-center">
 
-          {/* Left Side */}
-          <div className="space-y-6">
+          {/* LEFT SIDE: Contact Form & Info */}
+          <div className="lg:col-span-7 space-y-8">
 
-            {/* Email Card */}
-            <div className="rounded-2xl border border-white/10 bg-[#141414] p-7">
-              <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-xl bg-[#FF6B2C]/10 text-[#FF6B2C]">
-                <Mail size={24} />
-              </div>
+            {/* Quick Contact & Social Cards */}
+            <div ref={cardsRef} className="grid gap-4 sm:grid-cols-2">
 
-              <p className="mb-2 text-sm text-neutral-500">
-                Drop me an email
-              </p>
-
-              <a
-                href={`mailto:${EMAIL}`}
-                className="break-all text-lg font-semibold transition-colors hover:text-[#FF6B2C] md:text-xl"
-              >
-                {EMAIL}
-              </a>
-
-              <button
-                type="button"
-                onClick={handleCopy}
-                className="mt-5 flex items-center gap-2 text-sm text-neutral-400 transition-colors hover:text-[#FF6B2C]"
-              >
-                {copied ? <Check size={16} /> : <Copy size={16} />}
-                {copied ? "Copied!" : "Copy email address"}
-              </button>
-            </div>
-
-            {/* Availability Card */}
-            <div className="rounded-2xl border border-white/10 bg-[#141414] p-7">
-              <div className="mb-5 flex items-center gap-3">
-                <span className="h-2.5 w-2.5 rounded-full bg-green-500 shadow-[0_0_12px_rgba(34,197,94,0.7)]" />
-
-                <span className="text-sm font-medium text-green-400">
-                  Open to Connections
-                </span>
-              </div>
-
-              <h3 className="text-xl font-bold">
-                Let's Connect
-              </h3>
-
-              <p className="mt-3 text-sm leading-7 text-neutral-400">
-                Always interested in connecting with developers, creators,
-                and people building interesting things.
-              </p>
-            </div>
-
-            {/* Social Links */}
-            <div className="rounded-2xl border border-white/10 bg-[#141414] p-7">
-              <h3 className="mb-5 font-semibold">
-                Find Me Online
-              </h3>
-
-              <div className="flex flex-wrap gap-3">
-
-                {/* GitHub */}
-                <a
-                  href="https://github.com/navjot-ai-dev"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 rounded-xl border border-white/10 px-4 py-3 text-sm text-neutral-300 transition-all hover:border-[#FF6B2C]/50 hover:text-[#FF6B2C]"
-                >
-                  <Code2 size={18} />
-                  GitHub
-                  <ArrowUpRight size={14} />
-                </a>
-
-                {/* LinkedIn */}
-                <a
-                  href="https://www.linkedin.com/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 rounded-xl border border-white/10 px-4 py-3 text-sm text-neutral-300 transition-all hover:border-[#FF6B2C]/50 hover:text-[#FF6B2C]"
-                >
-                  <BriefcaseBusiness size={18} />
-                  LinkedIn
-                  <ArrowUpRight size={14} />
-                </a>
-
-              </div>
-            </div>
-          </div>
-
-          {/* Right Side - Contact Form */}
-          <div className="rounded-2xl border border-white/10 bg-[#141414] p-7 md:p-10">
-
-            <div className="mb-8">
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-[#FF6B2C]/10 text-[#FF6B2C]">
-                <MessageCircle size={24} />
-              </div>
-
-              <h3 className="text-2xl font-bold">
-                Send Me a Message
-              </h3>
-
-              <p className="mt-2 text-sm text-neutral-500">
-                Fill out the form and let's start a conversation.
-              </p>
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-5">
-
-              {/* Name and Email */}
-              <div className="grid gap-5 sm:grid-cols-2">
-
-                <div>
-                  <label
-                    htmlFor="name"
-                    className="mb-2 block text-sm text-neutral-300"
+              {/* Email pill card */}
+              <div className="flex flex-col justify-between rounded-2xl border border-white/[0.08] bg-[#0B1420]/80 p-5 backdrop-blur-xl transition-all duration-300 hover:border-[#FF6B00]/50 hover:shadow-[0_0_20px_rgba(255,107,0,0.2)]">
+                <div className="flex items-center justify-between">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#FF6B00]/10 text-[#FF6B00]">
+                    <Mail size={18} />
+                  </div>
+                  <button
+                    onClick={handleCopy}
+                    className="flex items-center gap-1.5 rounded-lg border border-white/10 px-2.5 py-1 text-xs text-neutral-300 transition-colors hover:border-[#FF6B00]/50 hover:text-[#FF6B00]"
+                    aria-label="Copy email address"
                   >
+                    {copied ? (
+                      <>
+                        <Check size={12} className="text-green-400" />
+                        <span className="text-green-400">Copied!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy size={12} />
+                        <span>Copy</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+                <div className="mt-4">
+                  <span className="text-[11px] font-mono text-neutral-400 uppercase tracking-wider">
+                    Direct Email
+                  </span>
+                  <a
+                    href={`mailto:${EMAIL}`}
+                    className="mt-0.5 block truncate text-sm font-semibold text-white transition-colors hover:text-[#FF6B00]"
+                  >
+                    {EMAIL}
+                  </a>
+                </div>
+              </div>
+
+              {/* Social Channels card */}
+              <div className="flex flex-col justify-between rounded-2xl border border-white/[0.08] bg-[#0B1420]/80 p-5 backdrop-blur-xl transition-all duration-300 hover:border-[#008CFF]/50 hover:shadow-[0_0_20px_rgba(0,140,255,0.2)]">
+                <span className="text-[11px] font-mono text-neutral-400 uppercase tracking-wider">
+                  Social Channels
+                </span>
+                <div className="mt-3 flex items-center gap-3">
+                  <a
+                    href={SOCIAL_LINKS.github}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-[#080F19] text-[#A3A3A3] transition-all hover:border-[#FF6B00]/60 hover:text-[#FF6B00]"
+                    aria-label="GitHub Profile"
+                  >
+                    <GithubIcon className="h-4 w-4" />
+                  </a>
+                  <a
+                    href={SOCIAL_LINKS.linkedin}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-[#080F19] text-[#A3A3A3] transition-all hover:border-[#008CFF]/60 hover:text-[#008CFF]"
+                    aria-label="LinkedIn Profile"
+                  >
+                    <LinkedinIcon className="h-4 w-4" />
+                  </a>
+                  <a
+                    href={`mailto:${EMAIL}`}
+                    className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-[#080F19] text-[#A3A3A3] transition-all hover:border-[#FF6B00]/60 hover:text-[#FF6B00]"
+                    aria-label="Send Email"
+                  >
+                    <Mail size={16} />
+                  </a>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Contact Form with sequential element animations */}
+            <form
+              ref={formRef}
+              onSubmit={handleSubmit}
+              className="rounded-3xl border border-white/[0.08] bg-[#0B1420]/90 p-6 sm:p-8 backdrop-blur-2xl shadow-[0_0_30px_rgba(0,0,0,0.5)] space-y-5"
+            >
+              <div className="grid gap-5 sm:grid-cols-2">
+                <div className="form-step">
+                  <label htmlFor="name" className="block text-xs font-semibold text-neutral-300 uppercase tracking-wider mb-2">
                     Your Name
                   </label>
-
                   <input
                     id="name"
                     name="name"
                     type="text"
-                    placeholder="John Doe"
                     required
-                    className="w-full rounded-xl border border-white/10 bg-[#0B0B0B] px-4 py-3 text-sm text-white outline-none transition-colors placeholder:text-neutral-600 focus:border-[#FF6B2C]"
+                    placeholder="e.g. Alex Smith"
+                    className="w-full rounded-xl border border-white/10 bg-[#080F19] px-4 py-3 text-sm text-white placeholder-neutral-500 transition-colors focus:border-[#FF6B00] focus:outline-none focus:ring-1 focus:ring-[#FF6B00]"
                   />
                 </div>
 
-                <div>
-                  <label
-                    htmlFor="email"
-                    className="mb-2 block text-sm text-neutral-300"
-                  >
+                <div className="form-step">
+                  <label htmlFor="email" className="block text-xs font-semibold text-neutral-300 uppercase tracking-wider mb-2">
                     Your Email
                   </label>
-
                   <input
                     id="email"
                     name="email"
                     type="email"
-                    placeholder="john@example.com"
                     required
-                    className="w-full rounded-xl border border-white/10 bg-[#0B0B0B] px-4 py-3 text-sm text-white outline-none transition-colors placeholder:text-neutral-600 focus:border-[#FF6B2C]"
+                    placeholder="alex@example.com"
+                    className="w-full rounded-xl border border-white/10 bg-[#080F19] px-4 py-3 text-sm text-white placeholder-neutral-500 transition-colors focus:border-[#FF6B00] focus:outline-none focus:ring-1 focus:ring-[#FF6B00]"
                   />
                 </div>
-
               </div>
 
-              {/* Subject */}
-              <div>
-                <label
-                  htmlFor="subject"
-                  className="mb-2 block text-sm text-neutral-300"
-                >
+              <div className="form-step">
+                <label htmlFor="subject" className="block text-xs font-semibold text-neutral-300 uppercase tracking-wider mb-2">
                   Subject
                 </label>
-
                 <input
                   id="subject"
                   name="subject"
                   type="text"
-                  placeholder="Let's work together..."
                   required
-                  className="w-full rounded-xl border border-white/10 bg-[#0B0B0B] px-4 py-3 text-sm text-white outline-none transition-colors placeholder:text-neutral-600 focus:border-[#FF6B2C]"
+                  placeholder="Project inquiry / collaboration"
+                  className="w-full rounded-xl border border-white/10 bg-[#080F19] px-4 py-3 text-sm text-white placeholder-neutral-500 transition-colors focus:border-[#FF6B00] focus:outline-none focus:ring-1 focus:ring-[#FF6B00]"
                 />
               </div>
 
-              {/* Message */}
-              <div>
-                <label
-                  htmlFor="message"
-                  className="mb-2 block text-sm text-neutral-300"
-                >
-                  Your Message
+              <div className="form-step">
+                <label htmlFor="message" className="block text-xs font-semibold text-neutral-300 uppercase tracking-wider mb-2">
+                  Message
                 </label>
-
                 <textarea
                   id="message"
                   name="message"
-                  rows={5}
-                  placeholder="Tell me about your idea..."
+                  rows={4}
                   required
-                  className="w-full resize-none rounded-xl border border-white/10 bg-[#0B0B0B] px-4 py-3 text-sm text-white outline-none transition-colors placeholder:text-neutral-600 focus:border-[#FF6B2C]"
+                  placeholder="Tell me about your idea or project..."
+                  className="w-full rounded-xl border border-white/10 bg-[#080F19] px-4 py-3 text-sm text-white placeholder-neutral-500 transition-colors focus:border-[#FF6B00] focus:outline-none focus:ring-1 focus:ring-[#FF6B00] resize-none"
                 />
               </div>
 
-              {/* Submit Button */}
-              <button
-                type="submit"
-                className="flex w-full items-center justify-center gap-3 rounded-xl bg-[#FF6B2C] px-6 py-4 text-sm font-bold text-black transition-all duration-300 hover:-translate-y-1 hover:bg-white"
-              >
-                Send Message
-                <Send size={17} />
-              </button>
+              <div className="form-step flex items-center justify-between pt-2">
+                <span className="text-[11px] text-neutral-400">
+                  Launches your email client to send message
+                </span>
 
-              <p className="text-center text-xs text-neutral-600">
-                This form opens your default email application with your
-                message prepared.
-              </p>
-
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="group inline-flex items-center gap-2 rounded-xl bg-[#FF6B00] px-7 py-3 text-sm font-bold text-black shadow-[0_0_20px_rgba(255,107,0,0.35)] transition-all duration-300 hover:scale-105 hover:bg-[#FF7A1A] hover:shadow-[0_0_30px_rgba(255,107,0,0.6)] disabled:opacity-50"
+                >
+                  <span>{isSubmitting ? "Opening..." : "Send Message"}</span>
+                  <Send size={15} className="transition-transform group-hover:translate-x-1" />
+                </button>
+              </div>
             </form>
+
           </div>
+
+          {/* RIGHT SIDE: Glowing Email Illustration with Sci-Fi Hologram & Trails */}
+          <div className="lg:col-span-5 relative flex items-center justify-center">
+            <div
+              ref={holoEmailRef}
+              className="relative aspect-square w-full max-w-[480px] select-none flex items-center justify-center will-change-transform"
+            >
+              {/* Circular light trails & orbital glow rings */}
+              <div className="absolute inset-0 rounded-full border border-[#008CFF]/30 shadow-[0_0_50px_rgba(0,140,255,0.3)] animate-spin-slow" />
+              <div className="absolute inset-8 rounded-full border border-[#FF6B00]/25 shadow-[0_0_40px_rgba(255,107,0,0.2)]" />
+              <div className="absolute -inset-4 rounded-full bg-gradient-to-tr from-[#008CFF]/10 via-[#FF6B00]/10 to-transparent blur-2xl" />
+
+              {/* Glowing Email Image */}
+              <div className="relative h-full w-full overflow-hidden rounded-3xl p-3 flex items-center justify-center">
+                <Image
+                  src={PORTFOLIO_IMAGES.contactEmail}
+                  alt="Futuristic Holographic Email Pedestal"
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 480px"
+                  className="object-contain filter drop-shadow-[0_0_35px_rgba(0,140,255,0.5)] transition-transform duration-700 hover:scale-105"
+                />
+              </div>
+
+              {/* Floating particles */}
+              <div className="pointer-events-none absolute top-12 right-12 h-2 w-2 rounded-full bg-[#008CFF] shadow-[0_0_12px_#008CFF] animate-pulse" />
+              <div className="pointer-events-none absolute bottom-16 left-10 h-2 w-2 rounded-full bg-[#FF6B00] shadow-[0_0_12px_#FF6B00] animate-pulse" />
+              <div className="pointer-events-none absolute top-1/2 left-4 h-1.5 w-1.5 rounded-full bg-white shadow-[0_0_8px_#ffffff]" />
+            </div>
+          </div>
+
         </div>
+
       </div>
     </section>
   );

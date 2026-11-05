@@ -1,186 +1,314 @@
 "use client";
 
-import {
-  ArrowUpRight,
-  BookOpen,
-  Code2,
-  GraduationCap,
-  Rocket,
-  Target,
-} from "lucide-react";
+import { useEffect, useRef } from "react";
+import Image from "next/image";
+import { BookOpen, Code2, Layers3, Rocket } from "lucide-react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { PORTFOLIO_IMAGES } from "@/lib/images";
 
-const journey = [
+const milestones = [
   {
-    number: "01",
-    year: "The Beginning",
+    phase: "01",
     title: "Started Web Development",
+    subtitle: "Foundation & Core Fundamentals",
     description:
-      "Started exploring web development and learned the fundamentals of HTML, CSS, and JavaScript.",
+      "Explored web fundamentals, mastering semantic HTML, modern CSS styling, and JavaScript logic to understand how web applications function from first principles.",
     icon: BookOpen,
-    tags: ["HTML", "CSS", "JavaScript"],
-    status: "Foundation",
+    tags: ["HTML5", "CSS3", "JavaScript"],
   },
   {
-    number: "02",
-    year: "Frontend Development",
-    title: "Building Interactive Interfaces",
+    phase: "02",
+    title: "Frontend Development",
+    subtitle: "Component Architecture & Modern UI",
     description:
-      "Moved into React and Next.js, focusing on component-based architecture, responsive layouts, and modern UI development.",
+      "Advanced into React and Next.js, developing responsive interfaces, component hierarchies, state management, and utility-first styling with Tailwind CSS.",
     icon: Code2,
     tags: ["React", "Next.js", "TypeScript", "Tailwind CSS"],
-    status: "Skill Development",
   },
   {
-    number: "03",
-    year: "Full Stack Learning",
-    title: "Exploring Backend Development",
+    phase: "03",
+    title: "Full Stack Learning",
+    subtitle: "APIs, Authentication & Databases",
     description:
-      "Started learning backend concepts, authentication, APIs, databases, and how frontend and backend systems work together.",
-    icon: GraduationCap,
+      "Deepened expertise in backend concepts, micro-frameworks like Hono, type-safe database schemas with Drizzle ORM, relational databases with PostgreSQL, and modern auth with Better Auth.",
+    icon: Layers3,
     tags: ["Hono", "Better Auth", "Drizzle ORM", "PostgreSQL"],
-    status: "In Progress",
   },
   {
-    number: "04",
-    year: "What's Next",
+    phase: "04",
     title: "Building Real-World Products",
+    subtitle: "End-to-End Execution & Architecture",
     description:
-      "Turning ideas into practical applications, improving architecture, and developing products that solve real problems.",
+      "Designing and shipping end-to-end applications, solving real-world challenges, exploring AI tooling integrations, and continuously expanding full-stack engineering skills.",
     icon: Rocket,
-    tags: ["Full Stack", "System Design", "Product Building"],
-    status: "Ongoing Goal",
+    tags: ["Full Stack Architecture", "System Design", "Product Building"],
   },
 ];
 
 export default function Experience() {
+  const sectionRef = useRef<HTMLElement>(null);
+  const bgCityRef = useRef<HTMLDivElement>(null);
+  const timelineRef = useRef<HTMLDivElement>(null);
+  const lineProgressRef = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    gsap.registerPlugin(ScrollTrigger);
+
+    const isReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (isReduced) return;
+
+    const ctx = gsap.context(() => {
+      // 1. Header entrance
+      if (headerRef.current) {
+        gsap.from(headerRef.current.children, {
+          opacity: 0,
+          y: 35,
+          stagger: 0.1,
+          duration: 0.8,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: headerRef.current,
+            start: "top 85%",
+          },
+        });
+      }
+
+      // 2. Futuristic city background parallax scrub
+      if (bgCityRef.current) {
+        gsap.to(bgCityRef.current, {
+          yPercent: 24,
+          scale: 1.1,
+          ease: "none",
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "top bottom",
+            end: "bottom top",
+            scrub: 1.2,
+          },
+        });
+      }
+
+      // 3. Timeline line progressively draws as user scrolls
+      if (lineProgressRef.current && timelineRef.current) {
+        gsap.fromTo(
+          lineProgressRef.current,
+          {
+            scaleY: 0,
+          },
+          {
+            scaleY: 1,
+            ease: "none",
+            scrollTrigger: {
+              trigger: timelineRef.current,
+              start: "top 65%",
+              end: "bottom 75%",
+              scrub: 0.6,
+            },
+          }
+        );
+      }
+
+      // 4. Timeline indicators activate sequentially
+      const nodes = gsap.utils.toArray<HTMLElement>(".timeline-node");
+      nodes.forEach((node) => {
+        gsap.fromTo(
+          node,
+          {
+            scale: 0.8,
+            borderColor: "rgba(255, 255, 255, 0.2)",
+            backgroundColor: "#05080D",
+          },
+          {
+            scale: 1.15,
+            borderColor: "#FF6B00",
+            backgroundColor: "#080F19",
+            boxShadow: "0 0 25px rgba(255, 107, 0, 0.8)",
+            duration: 0.5,
+            ease: "back.out(2)",
+            scrollTrigger: {
+              trigger: node,
+              start: "top 65%",
+              toggleActions: "play none none reverse",
+            },
+          }
+        );
+      });
+
+      // 5. Timeline content cards slide smoothly into view
+      const timelineCards = gsap.utils.toArray<HTMLElement>(".timeline-card");
+      timelineCards.forEach((card, index) => {
+        const isRightSide = index % 2 !== 0;
+        const xOffset = isRightSide ? 50 : -50;
+
+        gsap.fromTo(
+          card,
+          {
+            opacity: 0,
+            x: xOffset,
+            scale: 0.94,
+          },
+          {
+            opacity: 1,
+            x: 0,
+            scale: 1,
+            duration: 0.85,
+            ease: "power3.out",
+            scrollTrigger: {
+              trigger: card,
+              start: "top 78%",
+            },
+          }
+        );
+      });
+    }, sectionRef);
+
+    return () => ctx.revert();
+  }, []);
+
   return (
     <section
       id="experience"
-      className="relative overflow-hidden bg-[#0B0B0B] px-6 py-28 text-white md:px-12"
+      ref={sectionRef}
+      className="relative overflow-hidden bg-[#05080D] py-28 px-6 lg:px-16"
     >
-      <div className="mx-auto max-w-7xl">
-        {/* Heading */}
-        <div className="mb-20">
-          <p className="mb-4 text-sm font-semibold uppercase tracking-[0.3em] text-[#FF6B2C]">
-            My Development Journey
-          </p>
+      {/* FUTURISTIC BLUE CITY BACKGROUND WITH PARALLAX */}
+      <div
+        ref={bgCityRef}
+        className="pointer-events-none absolute inset-0 z-0 select-none overflow-hidden will-change-transform"
+      >
+        <Image
+          src={PORTFOLIO_IMAGES.experienceCity}
+          alt="Futuristic Blue City Environment"
+          fill
+          sizes="100vw"
+          className="object-cover object-center opacity-30 lg:opacity-40 filter brightness-90 contrast-115"
+        />
+        {/* Layered dark gradients for seamless cinematic blending */}
+        <div className="absolute inset-0 bg-gradient-to-t from-[#05080D] via-[#05080D]/75 to-[#05080D]" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#05080D] via-transparent to-[#05080D]" />
+      </div>
 
-          <h2 className="text-4xl font-bold tracking-tight md:text-6xl">
-            Learning. Building.{" "}
-            <span className="text-[#FF6B2C]">Growing.</span>
+      {/* Ambient lighting glows */}
+      <div className="pointer-events-none absolute top-1/4 right-1/4 h-[450px] w-[450px] rounded-full bg-[#008CFF]/15 blur-[140px]" />
+      <div className="pointer-events-none absolute bottom-1/4 left-1/4 h-[400px] w-[400px] rounded-full bg-[#FF6B00]/12 blur-[130px]" />
+
+      <div className="relative z-10 mx-auto max-w-5xl">
+
+        {/* Section Heading */}
+        <div ref={headerRef} className="text-center max-w-2xl mx-auto mb-20">
+          <div className="inline-flex items-center gap-2 rounded-full border border-[#FF6B00]/30 bg-[#FF6B00]/10 px-4 py-1.5 text-xs font-semibold tracking-wider text-[#FF6B00] uppercase">
+            My Experience —
+          </div>
+
+          <h2 className="mt-4 text-3xl font-extrabold tracking-tight text-white sm:text-4xl md:text-5xl">
+            My <span className="text-[#FF6B00]">Journey</span>
           </h2>
 
-          <p className="mt-6 max-w-2xl text-sm leading-7 text-neutral-400 md:text-base">
-            Every project teaches something new. Here's how I'm growing as a
-            developer, one step at a time.
+          <p className="mt-3 text-base text-[#A3A3A3]">
+            A timeline of my learning, technical evolution, and dedication to building modern software.
           </p>
         </div>
 
-        {/* Timeline */}
-        <div className="relative">
-          {/* Vertical Line */}
-          <div className="absolute bottom-8 left-[19px] top-8 w-px bg-gradient-to-b from-[#FF6B2C] via-white/20 to-transparent md:left-1/2 md:-translate-x-1/2" />
+        {/* VERTICAL TIMELINE */}
+        <div ref={timelineRef} className="relative">
+
+          {/* Background Central Track Line */}
+          <div className="absolute left-6 md:left-1/2 top-4 bottom-4 w-0.5 -translate-x-1/2 bg-white/10" />
+
+          {/* Active Glowing Line that progressively draws on scroll */}
+          <div
+            ref={lineProgressRef}
+            className="absolute left-6 md:left-1/2 top-4 bottom-4 w-0.5 -translate-x-1/2 origin-top bg-gradient-to-b from-[#FF6B00] via-[#008CFF] to-[#FF6B00] shadow-[0_0_15px_rgba(255,107,0,0.8)] will-change-transform"
+          />
 
           <div className="space-y-12 md:space-y-16">
-            {journey.map((item, index) => {
+            {milestones.map((item, index) => {
               const Icon = item.icon;
-              const isRight = index % 2 !== 0;
+              const isEven = index % 2 === 0;
 
               return (
                 <div
-                  key={item.number}
-                  className={`relative flex flex-col gap-6 pl-16 md:w-1/2 md:pl-0 ${
-                    isRight
-                      ? "md:ml-auto md:pl-16"
-                      : "md:pr-16 md:text-right"
+                  key={item.phase}
+                  className={`timeline-item relative flex flex-col md:flex-row items-start ${
+                    isEven ? "md:flex-row-reverse" : ""
                   }`}
                 >
-                  {/* Timeline Node */}
-                  <div className="absolute left-0 top-0 z-10 flex h-10 w-10 items-center justify-center rounded-full border border-[#FF6B2C]/50 bg-[#171717] text-[#FF6B2C] shadow-[0_0_20px_rgba(255,107,44,0.15)] md:left-auto md:right-[-20px]">
-                    {isRight && "md:hidden"}
-                    <Icon size={18} />
+                  {/* Timeline Glowing Node */}
+                  <div className="timeline-node absolute left-6 md:left-1/2 -translate-x-1/2 flex h-12 w-12 items-center justify-center rounded-full border-2 border-white/20 bg-[#05080D] z-20 transition-all duration-300 will-change-transform">
+                    <div className="h-4 w-4 rounded-full bg-[#FF6B00] shadow-[0_0_10px_#FF6B00]" />
                   </div>
 
-                  {/* Right Side Node */}
-                  {isRight && (
-                    <div className="absolute left-[-20px] top-0 z-10 hidden h-10 w-10 items-center justify-center rounded-full border border-[#FF6B2C]/50 bg-[#171717] text-[#FF6B2C] shadow-[0_0_20px_rgba(255,107,44,0.15)] md:flex">
-                      <Icon size={18} />
-                    </div>
-                  )}
-
-                  {/* Content Card */}
-                  <div className="group rounded-2xl border border-white/10 bg-[#141414] p-6 transition-all duration-300 hover:border-[#FF6B2C]/40 hover:bg-[#181818] md:p-8">
+                  {/* Card Content (slides in from left or right) */}
+                  <div className="w-full pl-16 md:pl-0 md:w-1/2">
                     <div
-                      className={`mb-6 flex flex-wrap items-center justify-between gap-3 ${
-                        !isRight ? "md:flex-row-reverse" : ""
+                      className={`timeline-card group relative rounded-2xl border border-white/[0.08] bg-[#0B1420]/85 p-6 backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:border-[#FF6B00]/60 hover:shadow-[0_0_25px_rgba(255,107,0,0.2)] will-change-transform ${
+                        isEven ? "md:mr-10 text-left md:text-right" : "md:ml-10 text-left"
                       }`}
                     >
-                      <span className="font-mono text-sm text-[#FF6B2C]">
-                        {item.number} / {item.year}
-                      </span>
-
-                      <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-neutral-400">
-                        {item.status}
-                      </span>
-                    </div>
-
-                    <h3 className="text-xl font-bold transition-colors group-hover:text-[#FF6B2C] md:text-2xl">
-                      {item.title}
-                    </h3>
-
-                    <p className="mt-4 text-sm leading-7 text-neutral-400">
-                      {item.description}
-                    </p>
-
-                    <div
-                      className={`mt-6 flex flex-wrap gap-2 ${
-                        !isRight ? "md:justify-end" : ""
-                      }`}
-                    >
-                      {item.tags.map((tag) => (
-                        <span
-                          key={tag}
-                          className="rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-xs text-neutral-300"
-                        >
-                          {tag}
+                      {/* Phase & Subtitle */}
+                      <div
+                        className={`flex items-center gap-2 mb-2 ${
+                          isEven ? "md:justify-end" : "justify-start"
+                        }`}
+                      >
+                        <span className="font-mono text-xs font-bold text-[#FF6B00]">
+                          PHASE {item.phase}
                         </span>
-                      ))}
+                        <span className="text-neutral-400">•</span>
+                        <span className="text-xs text-[#A3A3A3] font-medium">
+                          {item.subtitle}
+                        </span>
+                      </div>
+
+                      {/* Main Title with Icon */}
+                      <div
+                        className={`flex items-center gap-2.5 ${
+                          isEven ? "md:justify-end" : "justify-start"
+                        }`}
+                      >
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#FF6B00]/10 text-[#FF6B00]">
+                          <Icon size={16} />
+                        </div>
+                        <h3 className="text-xl font-bold text-white transition-colors group-hover:text-[#FF6B00]">
+                          {item.title}
+                        </h3>
+                      </div>
+
+                      {/* Description */}
+                      <p className="mt-2.5 text-sm leading-relaxed text-[#A3A3A3]">
+                        {item.description}
+                      </p>
+
+                      {/* Tags */}
+                      <div
+                        className={`mt-4 flex flex-wrap gap-2 ${
+                          isEven ? "md:justify-end" : "justify-start"
+                        }`}
+                      >
+                        {item.tags.map((tag) => (
+                          <span
+                            key={tag}
+                            className="rounded-md border border-white/[0.06] bg-[#05080D]/60 px-2 py-0.5 text-[11px] font-mono text-neutral-300"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+
+                      {/* Glow corner */}
+                      <div className="absolute -right-6 -top-6 h-16 w-16 rounded-full bg-[#FF6B00]/10 blur-xl opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
                     </div>
                   </div>
+
                 </div>
               );
             })}
           </div>
+
         </div>
 
-        {/* Bottom Statement */}
-        <div className="mt-20 rounded-2xl border border-[#FF6B2C]/20 bg-gradient-to-r from-[#FF6B2C]/10 via-[#141414] to-[#141414] p-8 md:p-10">
-          <div className="flex flex-col justify-between gap-6 md:flex-row md:items-center">
-            <div className="flex items-start gap-4">
-              <div className="rounded-xl bg-[#FF6B2C]/10 p-3 text-[#FF6B2C]">
-                <Target size={25} />
-              </div>
-
-              <div>
-                <h3 className="text-xl font-bold md:text-2xl">
-                  The journey is just getting started.
-                </h3>
-
-                <p className="mt-2 text-sm text-neutral-400">
-                  Focused on learning, experimenting, and building better
-                  things every day.
-                </p>
-              </div>
-            </div>
-
-            <a
-              href="#projects"
-              className="inline-flex shrink-0 items-center gap-2 text-sm font-semibold text-[#FF6B2C] transition-colors hover:text-white"
-            >
-              Explore My Work <ArrowUpRight size={17} />
-            </a>
-          </div>
-        </div>
       </div>
     </section>
   );

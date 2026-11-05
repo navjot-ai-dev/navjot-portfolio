@@ -162,3 +162,4 @@ export function GitIcon(props: SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
+

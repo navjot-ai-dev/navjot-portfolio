@@ -1,194 +1,316 @@
 "use client";
 
-import {
-  ArrowUpRight,
-  Code2,
-  Database,
-  ShoppingBag,
-  Sparkles,
-  Terminal,
-  Layers3,
-} from "lucide-react";
+import { useEffect, useRef } from "react";
+import Image from "next/image";
+import { ArrowUpRight, Sparkles, Clock, ArrowRight } from "lucide-react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { PORTFOLIO_IMAGES } from "@/lib/images";
+import { SOCIAL_LINKS } from "@/lib/constants";
+import { GithubIcon } from "@/components/ui/Icons";
 
-const projects = [
+type Project = {
+  id: string;
+  title: string;
+  description: string;
+  status: "In Development" | "Planned";
+  tech: string[];
+  imageSrc?: string;
+  isDashboardImage?: boolean;
+  githubUrl: string;
+  demoUrl?: string;
+};
+
+const projects: Project[] = [
   {
-    number: "01",
+    id: "nexus",
     title: "Nexus",
-    category: "Full Stack Application",
-    description:
-      "A modern full-stack application focused on authentication, scalable architecture, and a smooth user experience.",
+    description: "A modern full-stack web application focused on scalable architecture, secure authentication, and high-performance APIs.",
+    status: "In Development",
     tech: ["Next.js", "TypeScript", "Hono", "Better Auth", "PostgreSQL"],
-    status: "In Development",
-    featured: true,
-    icon: Layers3,
-    gradient: "from-orange-500/20 via-orange-500/5 to-transparent",
+    imageSrc: PORTFOLIO_IMAGES.projectsMonitor,
+    isDashboardImage: true,
+    githubUrl: SOCIAL_LINKS.github,
   },
   {
-    number: "02",
+    id: "json-formatter",
     title: "JSON Formatter",
-    category: "Developer Utility",
-    description:
-      "A clean and powerful tool to format, validate, and organize JSON data with a simple developer-friendly interface.",
-    tech: ["Next.js", "TypeScript", "Tailwind CSS"],
+    description: "A simple yet powerful developer utility for formatting, validating, and beautifying complex JSON data structures.",
     status: "In Development",
-    featured: false,
-    icon: Code2,
-    gradient: "from-blue-500/20 via-blue-500/5 to-transparent",
+    tech: ["Next.js", "TypeScript", "Tailwind CSS"],
+    githubUrl: SOCIAL_LINKS.github,
   },
   {
-    number: "03",
+    id: "ai-tools-platform",
     title: "AI Tools Platform",
-    category: "AI Powered Platform",
-    description:
-      "An upcoming platform bringing useful AI-powered tools together in one simple and accessible experience.",
+    description: "Exploring the possibilities of AI-powered web applications and machine intelligence tool suites with modern UI.",
+    status: "Planned",
     tech: ["Next.js", "TypeScript", "AI APIs"],
-    status: "Planned",
-    featured: false,
-    icon: Sparkles,
-    gradient: "from-purple-500/20 via-purple-500/5 to-transparent",
-  },
-  {
-    number: "04",
-    title: "E-Commerce Platform",
-    category: "Full Stack Web App",
-    description:
-      "A modern online shopping experience with product discovery, shopping cart, and a scalable application structure.",
-    tech: ["Next.js", "TypeScript", "Database"],
-    status: "Planned",
-    featured: false,
-    icon: ShoppingBag,
-    gradient: "from-green-500/20 via-green-500/5 to-transparent",
+    githubUrl: SOCIAL_LINKS.github,
   },
 ];
 
 export default function Projects() {
+  const sectionRef = useRef<HTMLElement>(null);
+  const cardsRef = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    gsap.registerPlugin(ScrollTrigger);
+
+    const isReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (isReduced) return;
+
+    const ctx = gsap.context(() => {
+      // 1. Header entrance
+      if (headerRef.current) {
+        gsap.from(headerRef.current.children, {
+          opacity: 0,
+          y: 30,
+          stagger: 0.12,
+          duration: 0.8,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: headerRef.current,
+            start: "top 85%",
+          },
+        });
+      }
+
+      // 2. Project cards reveal one by one with subtle horizontal drift
+      const projectCards = gsap.utils.toArray<HTMLElement>(".project-card");
+      projectCards.forEach((card, i) => {
+        const xOffset = i === 0 ? -35 : i === 2 ? 35 : 0;
+
+        gsap.fromTo(
+          card,
+          {
+            opacity: 0,
+            y: 60,
+            x: xOffset,
+            scale: 0.94,
+          },
+          {
+            opacity: 1,
+            y: 0,
+            x: 0,
+            scale: 1,
+            duration: 0.9,
+            ease: "power3.out",
+            scrollTrigger: {
+              trigger: card,
+              start: "top 85%",
+            },
+          }
+        );
+      });
+
+      // 3. Smooth image parallax inside project cards
+      const parallaxImgs = gsap.utils.toArray<HTMLElement>(".project-parallax-inner");
+      parallaxImgs.forEach((img) => {
+        gsap.fromTo(
+          img,
+          {
+            yPercent: -12,
+            scale: 1.15,
+          },
+          {
+            yPercent: 12,
+            scale: 1.05,
+            ease: "none",
+            scrollTrigger: {
+              trigger: img.closest(".project-card"),
+              start: "top bottom",
+              end: "bottom top",
+              scrub: 1,
+            },
+          }
+        );
+      });
+    }, sectionRef);
+
+    return () => ctx.revert();
+  }, []);
+
   return (
     <section
       id="projects"
-      className="relative overflow-hidden bg-[#0B0B0B] px-6 py-28 text-white md:px-12"
+      ref={sectionRef}
+      className="relative overflow-hidden bg-[#080F19] py-28 px-6 lg:px-16"
     >
-      <div className="mx-auto max-w-7xl">
-        {/* Section Heading */}
-        <div className="mb-16 flex flex-col justify-between gap-6 md:flex-row md:items-end">
-          <div>
-            <p className="mb-4 text-sm font-semibold uppercase tracking-[0.3em] text-[#FF6B2C]">
-              What I'm Building
-            </p>
+      {/* Background ambient lighting */}
+      <div className="pointer-events-none absolute -left-40 top-1/4 h-[500px] w-[500px] rounded-full bg-[#008CFF]/12 blur-[140px]" />
+      <div className="pointer-events-none absolute -right-40 bottom-1/4 h-[450px] w-[450px] rounded-full bg-[#FF6B00]/10 blur-[130px]" />
 
-            <h2 className="text-4xl font-bold tracking-tight md:text-6xl">
-              Selected <span className="text-[#FF6B2C]">Projects.</span>
+      <div className="mx-auto max-w-7xl">
+
+        {/* Section Heading */}
+        <div
+          ref={headerRef}
+          className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16"
+        >
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#FF6B00]/30 bg-[#FF6B00]/10 px-4 py-1.5 text-xs font-semibold tracking-wider text-[#FF6B00] uppercase">
+              My Projects —
+            </div>
+
+            <h2 className="mt-4 text-3xl font-extrabold tracking-tight text-white sm:text-4xl md:text-5xl">
+              Some Of My <span className="text-[#FF6B00]">Recent Work</span>
             </h2>
+
+            <p className="mt-3 text-base text-[#A3A3A3] max-w-xl">
+              A showcase of my skills, architecture decisions, and creative engineering.
+            </p>
           </div>
 
-          <p className="max-w-md text-sm leading-7 text-neutral-400 md:text-base">
-            A collection of ideas, experiments, and applications I'm building
-            to improve my skills and solve real-world problems.
-          </p>
+          <a
+            href={SOCIAL_LINKS.github}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group inline-flex items-center gap-2 rounded-full border border-white/10 bg-[#0B1420] px-6 py-2.5 text-sm font-semibold text-white transition-all hover:border-[#FF6B00]/60 hover:text-[#FF6B00]"
+          >
+            <span>View All Projects</span>
+            <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
+          </a>
         </div>
 
-        {/* Projects Grid */}
-        <div className="grid gap-6 md:grid-cols-2">
+        {/* 3 Premium Project Cards */}
+        <div ref={cardsRef} className="grid gap-8 lg:grid-cols-3">
           {projects.map((project) => {
-            const Icon = project.icon;
+            const isNexus = project.id === "nexus";
+            const isJson = project.id === "json-formatter";
 
             return (
               <article
-                key={project.number}
-                className={`group relative overflow-hidden rounded-2xl border border-white/10 bg-[#141414] p-6 transition-all duration-300 hover:-translate-y-1 hover:border-[#FF6B2C]/50 md:p-8 ${
-                  project.featured ? "md:col-span-2" : ""
-                }`}
+                key={project.id}
+                className="project-card group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-white/[0.08] bg-[#0B1420]/80 backdrop-blur-xl transition-all duration-500 hover:-translate-y-2 hover:border-[#FF6B00]/60 hover:shadow-[0_0_35px_rgba(255,107,0,0.22)] will-change-transform"
               >
-                {/* Background Gradient */}
-                <div
-                  className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${project.gradient} opacity-60 transition-opacity duration-300 group-hover:opacity-100`}
-                />
+                {/* Visual Image Preview Area with smooth zoom and internal parallax */}
+                <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#05080D] border-b border-white/[0.06]">
+                  {isNexus && project.imageSrc ? (
+                    <div className="project-parallax-inner relative h-[120%] w-full -top-[10%] will-change-transform">
+                      <Image
+                        src={project.imageSrc}
+                        alt="Nexus Dashboard Monitor Visual"
+                        fill
+                        sizes="(max-width: 1024px) 100vw, 33vw"
+                        className="object-cover object-center filter brightness-90 contrast-105 transition-transform duration-700 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#0B1420] via-transparent to-transparent opacity-85" />
+                    </div>
+                  ) : isJson ? (
+                    // Futuristic code/JSON formatter visual with parallax inner
+                    <div className="project-parallax-inner relative flex h-[120%] w-full -top-[10%] flex-col justify-between p-6 bg-gradient-to-br from-[#080F19] to-[#05080D] will-change-transform">
+                      <div className="flex items-center justify-between">
+                        <div className="flex gap-1.5">
+                          <span className="h-2.5 w-2.5 rounded-full bg-red-500/80" />
+                          <span className="h-2.5 w-2.5 rounded-full bg-yellow-500/80" />
+                          <span className="h-2.5 w-2.5 rounded-full bg-green-500/80" />
+                        </div>
+                        <span className="text-[11px] font-mono text-[#008CFF]">formatter.json</span>
+                      </div>
 
-                <div className="relative z-10">
-                  {/* Top Row */}
-                  <div className="mb-10 flex items-center justify-between">
-                    <span className="font-mono text-sm text-neutral-500">
-                      / {project.number}
-                    </span>
+                      <div className="my-auto flex items-center justify-center">
+                        <div className="relative flex h-20 w-24 items-center justify-center rounded-2xl border border-[#008CFF]/30 bg-[#008CFF]/10 text-3xl font-mono font-bold text-[#008CFF] shadow-[0_0_25px_rgba(0,140,255,0.25)] transition-transform duration-500 group-hover:scale-110">
+                          {"{ }"}
+                          <div className="absolute -bottom-1 -right-1 h-3 w-3 rounded-full bg-[#FF6B00]" />
+                        </div>
+                      </div>
 
+                      <div className="font-mono text-[10px] text-neutral-400">
+                        <code>{`{ "status": 200, "valid": true }`}</code>
+                      </div>
+                    </div>
+                  ) : (
+                    // AI Tools Platform neural visual with parallax inner
+                    <div className="project-parallax-inner relative flex h-[120%] w-full -top-[10%] items-center justify-center overflow-hidden bg-gradient-to-br from-[#080F19] via-[#0B1420] to-[#05080D] will-change-transform">
+                      <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#008CFF_1px,transparent_1px)] [background-size:16px_16px]" />
+                      <div className="relative flex h-24 w-24 items-center justify-center rounded-full border border-purple-500/30 bg-purple-500/10 shadow-[0_0_35px_rgba(168,85,247,0.3)] transition-transform duration-500 group-hover:scale-110">
+                        <Sparkles className="h-10 w-10 text-purple-400" />
+                        <div className="absolute inset-0 animate-ping rounded-full border border-purple-500/20 opacity-30" />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Status Badge */}
+                  <div className="absolute top-4 right-4 z-10">
                     <span
-                      className={`rounded-full border px-3 py-1 text-xs font-medium ${
+                      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold backdrop-blur-md ${
                         project.status === "In Development"
-                          ? "border-orange-500/30 bg-orange-500/10 text-orange-400"
-                          : "border-white/10 bg-white/5 text-neutral-400"
+                          ? "border border-[#FF6B00]/40 bg-[#05080D]/85 text-[#FF6B00] shadow-[0_0_12px_rgba(255,107,0,0.25)]"
+                          : "border border-purple-500/40 bg-[#05080D]/85 text-purple-400 shadow-[0_0_12px_rgba(168,85,247,0.25)]"
                       }`}
                     >
+                      <Clock size={12} />
                       {project.status}
                     </span>
                   </div>
+                </div>
 
-                  {/* Icon */}
-                  <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-xl border border-white/10 bg-black/30 text-[#FF6B2C] transition-transform duration-300 group-hover:scale-110">
-                    <Icon size={27} strokeWidth={1.6} />
-                  </div>
+                {/* Card Content */}
+                <div className="flex flex-1 flex-col justify-between p-7">
+                  <div>
+                    <h3 className="text-2xl font-bold text-white transition-colors group-hover:text-[#FF6B00]">
+                      {project.title}
+                    </h3>
 
-                  {/* Project Information */}
-                  <div className="mb-6">
-                    <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#FF6B2C]">
-                      {project.category}
-                    </p>
-
-                    <div className="flex items-center justify-between gap-4">
-                      <h3 className="text-2xl font-bold md:text-3xl">
-                        {project.title}
-                      </h3>
-
-                      <ArrowUpRight
-                        size={24}
-                        className="shrink-0 text-neutral-500 transition-all duration-300 group-hover:-translate-y-1 group-hover:translate-x-1 group-hover:text-[#FF6B2C]"
-                      />
-                    </div>
-
-                    <p className="mt-4 max-w-2xl text-sm leading-7 text-neutral-400 md:text-base">
+                    <p className="mt-3 text-sm leading-relaxed text-[#A3A3A3]">
                       {project.description}
                     </p>
+
+                    {/* Tech Tags */}
+                    <div className="mt-5 flex flex-wrap gap-2">
+                      {project.tech.map((t) => (
+                        <span
+                          key={t}
+                          className="rounded-lg border border-white/[0.08] bg-[#05080D]/60 px-2.5 py-1 text-xs font-mono text-neutral-300"
+                        >
+                          {t}
+                        </span>
+                      ))}
+                    </div>
                   </div>
 
-                  {/* Technologies */}
-                  <div className="flex flex-wrap gap-2 border-t border-white/10 pt-6">
-                    {project.tech.map((technology) => (
-                      <span
-                        key={technology}
-                        className="rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-xs text-neutral-300"
+                  {/* Action Buttons */}
+                  <div className="mt-8 flex items-center gap-3 border-t border-white/[0.06] pt-5">
+                    {/* GitHub Button */}
+                    <a
+                      href={project.githubUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-white/10 bg-[#080F19] py-2.5 text-xs font-semibold text-white transition-all hover:border-[#FF6B00]/60 hover:text-[#FF6B00] hover:shadow-[0_0_15px_rgba(255,107,0,0.2)]"
+                    >
+                      <GithubIcon className="h-4 w-4" />
+                      <span>GitHub</span>
+                      <ArrowUpRight size={13} />
+                    </a>
+
+                    {/* Live Demo or Status Indicator */}
+                    {project.demoUrl ? (
+                      <a
+                        href={project.demoUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#FF6B00] py-2.5 text-xs font-bold text-black transition-all hover:bg-[#FF7A1A]"
                       >
-                        {technology}
+                        <span>Live Demo</span>
+                        <ArrowUpRight size={13} />
+                      </a>
+                    ) : (
+                      <span className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-white/[0.06] bg-[#05080D]/50 py-2.5 text-xs font-medium text-neutral-400 select-none">
+                        <span>{project.status === "In Development" ? "Build In Progress" : "Planned Roadmap"}</span>
                       </span>
-                    ))}
+                    )}
                   </div>
                 </div>
+
+                {/* Subtle hover orange light border reflection */}
+                <div className="absolute -bottom-10 left-1/2 h-16 w-3/4 -translate-x-1/2 rounded-full bg-[#FF6B00]/10 blur-xl opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
               </article>
             );
           })}
         </div>
 
-        {/* Bottom Banner */}
-        <div className="mt-10 flex flex-col items-start justify-between gap-5 rounded-2xl border border-white/10 bg-[#141414] p-6 md:flex-row md:items-center md:p-8">
-          <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#FF6B2C]/10 text-[#FF6B2C]">
-              <Terminal size={24} />
-            </div>
-
-            <div>
-              <h3 className="font-semibold">More projects are on the way.</h3>
-              <p className="mt-1 text-sm text-neutral-500">
-                Always building. Always learning.
-              </p>
-            </div>
-          </div>
-
-          <a
-            href="https://github.com/navjot-ai-dev"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-[#FF6B2C] transition-colors hover:text-white"
-          >
-            Explore GitHub <ArrowUpRight size={17} />
-          </a>
-        </div>
       </div>
     </section>
   );
