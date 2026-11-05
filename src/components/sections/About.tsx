@@ -3,9 +3,9 @@
 import { useEffect, useRef } from "react";
 import Image from "next/image";
 import {
-  Code2,
-  Palette,
-  Zap,
+  CheckCircle2,
+  Paintbrush,
+  Flame,
   GraduationCap,
   Sparkles,
   Calendar,
@@ -17,24 +17,20 @@ import { PORTFOLIO_IMAGES } from "@/lib/images";
 
 const highlightCards = [
   {
-    icon: Code2,
+    icon: CheckCircle2,
     title: "Clean Code",
-    desc: "Writing maintainable, scalable, and modern TypeScript & React code.",
   },
   {
-    icon: Palette,
+    icon: Paintbrush,
     title: "Creative Design",
-    desc: "Crafting intuitive, futuristic, and memorable user interfaces.",
   },
   {
-    icon: Zap,
+    icon: Flame,
     title: "Fast Performance",
-    desc: "Optimizing web performance, load speed, and snappy interactions.",
   },
   {
     icon: GraduationCap,
     title: "Always Learning",
-    desc: "Constantly exploring full-stack ecosystems, auth, and backend tooling.",
   },
 ];
 
@@ -61,8 +57,6 @@ export default function About() {
   const sphereWrapperRef = useRef<HTMLDivElement>(null);
   const sphereImgRef = useRef<HTMLDivElement>(null);
   const textContainerRef = useRef<HTMLDivElement>(null);
-  const bgGlowLeftRef = useRef<HTMLDivElement>(null);
-  const bgGlowRightRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
@@ -71,49 +65,20 @@ export default function About() {
     if (isReduced) return;
 
     const ctx = gsap.context(() => {
-      // 1. Background & Foreground move at different speeds (Parallax)
-      if (bgGlowLeftRef.current) {
-        gsap.to(bgGlowLeftRef.current, {
-          yPercent: -25,
-          scale: 1.15,
-          ease: "none",
-          scrollTrigger: {
-            trigger: sectionRef.current,
-            start: "top bottom",
-            end: "bottom top",
-            scrub: 1,
-          },
-        });
-      }
-
-      if (bgGlowRightRef.current) {
-        gsap.to(bgGlowRightRef.current, {
-          yPercent: 30,
-          scale: 0.9,
-          ease: "none",
-          scrollTrigger: {
-            trigger: sectionRef.current,
-            start: "top bottom",
-            end: "bottom top",
-            scrub: 1.2,
-          },
-        });
-      }
-
-      // 2. Metallic sphere smoothly scales into view with ScrollTrigger
+      // 1. Sphere smooth scale into view
       if (sphereWrapperRef.current) {
         gsap.fromTo(
           sphereWrapperRef.current,
           {
-            scale: 0.72,
+            scale: 0.75,
             opacity: 0,
-            y: 60,
+            y: 50,
           },
           {
             scale: 1,
             opacity: 1,
             y: 0,
-            duration: 1.2,
+            duration: 1.1,
             ease: "power3.out",
             scrollTrigger: {
               trigger: sectionRef.current,
@@ -125,11 +90,11 @@ export default function About() {
         );
       }
 
-      // Sphere image continuous parallax rotation
+      // Continuous sphere rotation scrub
       if (sphereImgRef.current) {
         gsap.to(sphereImgRef.current, {
-          rotateZ: 15,
-          yPercent: -12,
+          rotateZ: 18,
+          yPercent: -10,
           ease: "none",
           scrollTrigger: {
             trigger: sectionRef.current,
@@ -140,19 +105,19 @@ export default function About() {
         });
       }
 
-      // 3. Text reveals line by line
+      // 2. Text elements reveal line by line
       const textLines = gsap.utils.toArray<HTMLElement>(".about-text-reveal");
       gsap.fromTo(
         textLines,
         {
           opacity: 0,
-          y: 40,
+          y: 35,
         },
         {
           opacity: 1,
           y: 0,
-          stagger: 0.14,
-          duration: 0.9,
+          stagger: 0.12,
+          duration: 0.85,
           ease: "power3.out",
           scrollTrigger: {
             trigger: textContainerRef.current,
@@ -161,12 +126,12 @@ export default function About() {
         }
       );
 
-      // 4. Stats row entrance
+      // 3. Stats row entrance
       gsap.fromTo(
         ".about-stat-item",
         {
           opacity: 0,
-          y: 25,
+          y: 20,
           scale: 0.9,
         },
         {
@@ -174,7 +139,7 @@ export default function About() {
           y: 0,
           scale: 1,
           stagger: 0.1,
-          duration: 0.7,
+          duration: 0.6,
           ease: "back.out(1.4)",
           scrollTrigger: {
             trigger: textContainerRef.current,
@@ -183,24 +148,22 @@ export default function About() {
         }
       );
 
-      // 5. About cards appear one after another
+      // 4. Feature cards appear sequentially
       gsap.fromTo(
-        ".about-card",
+        ".about-feature-card",
         {
           opacity: 0,
-          y: 45,
-          scale: 0.92,
+          x: 30,
         },
         {
           opacity: 1,
-          y: 0,
-          scale: 1,
-          stagger: 0.12,
-          duration: 0.8,
+          x: 0,
+          stagger: 0.1,
+          duration: 0.7,
           ease: "power2.out",
           scrollTrigger: {
-            trigger: ".about-cards-container",
-            start: "top 85%",
+            trigger: ".about-feature-container",
+            start: "top 80%",
           },
         }
       );
@@ -213,30 +176,24 @@ export default function About() {
     <section
       id="about"
       ref={sectionRef}
-      className="relative overflow-hidden bg-[#080F19] py-28 px-6 lg:px-16"
+      className="relative overflow-hidden bg-[#020408] py-28 px-6 lg:px-16"
     >
-      {/* Background ambient lighting with parallax refs */}
-      <div
-        ref={bgGlowLeftRef}
-        className="pointer-events-none absolute -left-48 top-1/4 h-[520px] w-[520px] rounded-full bg-[#008CFF]/15 blur-[140px] will-change-transform"
-      />
-      <div
-        ref={bgGlowRightRef}
-        className="pointer-events-none absolute -right-36 bottom-10 h-[480px] w-[480px] rounded-full bg-[#FF6B00]/12 blur-[130px] will-change-transform"
-      />
+      {/* Background ambient lighting */}
+      <div className="pointer-events-none absolute -left-48 top-1/4 h-[520px] w-[520px] rounded-full bg-[#008CFF]/15 blur-[140px]" />
+      <div className="pointer-events-none absolute -right-36 bottom-10 h-[480px] w-[480px] rounded-full bg-[#FF6B00]/12 blur-[130px]" />
 
       <div className="mx-auto max-w-7xl">
-        <div className="grid items-center gap-14 lg:grid-cols-12">
+        <div className="grid items-center gap-10 lg:grid-cols-12">
 
-          {/* LEFT: Metallic Futuristic Sphere Visual */}
+          {/* LEFT: Metallic Futuristic Sphere Visual (takes 5 cols) */}
           <div className="lg:col-span-5 relative flex items-center justify-center">
             <div
               ref={sphereWrapperRef}
-              className="relative aspect-square w-full max-w-[480px] select-none will-change-transform"
+              className="relative aspect-square w-full max-w-[440px] select-none will-change-transform"
             >
-              {/* Outer glowing orbital rings with parallax spin */}
-              <div className="absolute inset-0 rounded-full border border-[#008CFF]/30 shadow-[0_0_50px_rgba(0,140,255,0.25)] animate-spin-slow" />
-              <div className="absolute inset-6 rounded-full border border-[#FF6B00]/25 shadow-[0_0_40px_rgba(255,107,0,0.2)]" />
+              {/* Outer glowing orbital rings */}
+              <div className="absolute inset-0 rounded-full border border-[#008CFF]/35 shadow-[0_0_50px_rgba(0,140,255,0.3)] animate-spin-slow" />
+              <div className="absolute inset-6 rounded-full border border-[#FF6B00]/30 shadow-[0_0_40px_rgba(255,107,0,0.25)]" />
 
               {/* Sphere image container */}
               <div
@@ -247,50 +204,52 @@ export default function About() {
                   src={PORTFOLIO_IMAGES.aboutSphere}
                   alt="Metallic Futuristic Holographic Sphere"
                   fill
-                  sizes="(max-width: 768px) 100vw, 480px"
-                  className="object-contain filter drop-shadow-[0_0_35px_rgba(0,140,255,0.4)] transition-transform duration-700 hover:scale-105"
+                  sizes="(max-width: 768px) 100vw, 440px"
+                  className="object-contain filter drop-shadow-[0_0_35px_rgba(0,140,255,0.5)] transition-transform duration-700 hover:scale-105"
                 />
               </div>
 
               {/* Holographic light accent */}
-              <div className="absolute -bottom-4 left-1/2 h-8 w-3/4 -translate-x-1/2 rounded-full bg-gradient-to-r from-transparent via-[#008CFF]/40 to-transparent blur-md" />
+              <div className="absolute -bottom-4 left-1/2 h-8 w-3/4 -translate-x-1/2 rounded-full bg-gradient-to-r from-transparent via-[#008CFF]/45 to-transparent blur-md" />
             </div>
           </div>
 
-          {/* RIGHT: About Details & Glassmorphism Cards */}
-          <div ref={textContainerRef} className="lg:col-span-7 space-y-8">
+          {/* CENTER: About Details & 3 Stats (takes 4 cols) */}
+          <div ref={textContainerRef} className="lg:col-span-4 space-y-6">
 
-            {/* Header info (line by line reveal) */}
+            {/* Header info */}
             <div>
-              <div className="about-text-reveal inline-flex items-center gap-2 rounded-full border border-[#FF6B00]/30 bg-[#FF6B00]/10 px-4 py-1.5 text-xs font-semibold tracking-wider text-[#FF6B00] uppercase">
-                About Me —
+              <div className="about-text-reveal inline-flex items-center gap-2 text-xs font-semibold tracking-wider text-[#A3A3A3] uppercase">
+                <span>About Me</span>
+                <span className="h-px w-8 bg-[#FF6B00]" />
               </div>
 
-              <h2 className="about-text-reveal mt-4 text-3xl font-extrabold tracking-tight text-white sm:text-4xl md:text-5xl leading-tight">
-                Passionate <span className="text-[#FF6B00]">Developer</span> & Problem{" "}
+              <h2 className="about-text-reveal mt-3 text-3xl font-extrabold tracking-tight text-white sm:text-4xl leading-snug">
+                Passionate <span className="text-[#FF6B00]">Developer</span> &amp; Problem{" "}
                 <span className="text-[#FF6B00]">Solver</span>
               </h2>
 
-              <p className="about-text-reveal mt-5 text-base sm:text-lg leading-relaxed text-[#A3A3A3]">
+              <p className="about-text-reveal mt-4 text-sm leading-relaxed text-[#A3A3A3]">
                 I&apos;m a Full Stack Developer who loves turning ideas into reality.
                 I enjoy building scalable web applications, exploring new technologies,
                 and learning every day.
               </p>
             </div>
 
-            {/* Stats row (from reference) */}
-            <div className="grid grid-cols-3 gap-4 border-y border-white/10 py-5">
+            {/* Three small info cards below (exactly as in screenshot) */}
+            <div className="grid grid-cols-3 gap-2.5 pt-3">
               {stats.map((stat, i) => {
                 const Icon = stat.icon;
                 return (
-                  <div key={i} className="about-stat-item flex flex-col items-start gap-1">
-                    <div className="flex items-center gap-1.5 text-[#FF6B00]">
-                      <Icon size={18} />
-                      <span className="text-xl sm:text-2xl font-black text-white">
-                        {stat.value}
-                      </span>
-                    </div>
-                    <span className="text-xs text-[#A3A3A3] font-medium">
+                  <div
+                    key={i}
+                    className="about-stat-item flex flex-col items-center justify-center rounded-xl border border-white/[0.08] bg-[#05080D]/90 p-3 text-center shadow-lg"
+                  >
+                    <Icon size={16} className="text-[#FF6B00] mb-1" />
+                    <span className="text-lg font-black text-white">
+                      {stat.value}
+                    </span>
+                    <span className="text-[10px] text-[#A3A3A3] font-medium leading-tight mt-0.5">
                       {stat.label}
                     </span>
                   </div>
@@ -298,40 +257,35 @@ export default function About() {
               })}
             </div>
 
-            {/* Four Glassmorphism Cards */}
-            <div className="about-cards-container grid gap-4 sm:grid-cols-2">
+          </div>
+
+          {/* RIGHT: Four Feature Cards stacked vertically (takes 3 cols, exactly as in screenshot) */}
+          <div className="lg:col-span-3">
+            <div className="about-feature-container rounded-3xl border border-white/[0.08] bg-[#080F19]/80 p-5 backdrop-blur-xl shadow-[0_0_30px_rgba(0,0,0,0.6)] space-y-3.5">
               {highlightCards.map((card, i) => {
                 const Icon = card.icon;
                 return (
                   <div
                     key={i}
-                    className="about-card group relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0B1420]/80 p-5 backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:border-[#FF6B00]/60 hover:shadow-[0_0_25px_rgba(255,107,0,0.25)] will-change-transform"
+                    className="about-feature-card group flex items-center gap-3.5 rounded-xl border border-white/[0.05] bg-[#05080D]/70 p-3.5 transition-all duration-300 hover:border-[#FF6B00]/60 hover:bg-[#0B1420] hover:shadow-[0_0_15px_rgba(255,107,0,0.2)]"
                   >
-                    <div className="flex items-start gap-3.5">
-                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#FF6B00]/30 bg-[#FF6B00]/10 text-[#FF6B00] shadow-[0_0_12px_rgba(255,107,0,0.2)] transition-all duration-300 group-hover:scale-110 group-hover:bg-[#FF6B00] group-hover:text-black">
-                        <Icon size={20} />
-                      </div>
-                      <div>
-                        <h3 className="text-base font-bold text-white transition-colors group-hover:text-[#FF6B00]">
-                          {card.title}
-                        </h3>
-                        <p className="mt-1 text-xs leading-relaxed text-[#A3A3A3]">
-                          {card.desc}
-                        </p>
-                      </div>
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#FF6B00]/40 text-[#FF6B00] transition-colors group-hover:bg-[#FF6B00] group-hover:text-black">
+                      <Icon size={16} />
                     </div>
-
-                    {/* Subtle corner light line */}
-                    <div className="absolute -right-8 -top-8 h-16 w-16 rounded-full bg-[#FF6B00]/10 blur-xl transition-all duration-500 group-hover:bg-[#FF6B00]/25" />
+                    <span className="text-sm font-bold text-white transition-colors group-hover:text-[#FF6B00]">
+                      {card.title}
+                    </span>
                   </div>
                 );
               })}
             </div>
-
           </div>
 
         </div>
       </div>
+
+      {/* Rocky sci-fi ground divider between About and Skills */}
+      <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-14 bg-gradient-to-t from-[#020408] to-transparent z-20" />
     </section>
   );
 }

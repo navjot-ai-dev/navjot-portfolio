@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import Image from "next/image";
-import { ArrowRight, Play, Mail } from "lucide-react";
+import { ArrowRight, Mail } from "lucide-react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { PORTFOLIO_IMAGES } from "@/lib/images";
@@ -13,7 +13,6 @@ export default function Hero() {
   const heroRef = useRef<HTMLElement>(null);
   const bgImageRef = useRef<HTMLDivElement>(null);
   const leftContentRef = useRef<HTMLDivElement>(null);
-  const floatingCubesRef = useRef<HTMLDivElement>(null);
   const scrollIndicatorRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -23,60 +22,54 @@ export default function Hero() {
     if (isReduced) return;
 
     const ctx = gsap.context(() => {
-      // 1. Entrance timeline
+      // 1. Smooth entrance animations
       const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
 
-      tl.from(".hero-badge", {
+      tl.from(".hero-intro", {
         opacity: 0,
-        y: -20,
+        x: -25,
         duration: 0.8,
       })
-      .from(".hero-title-main", {
+      .from(".hero-heading", {
         opacity: 0,
-        y: 45,
+        y: 40,
         duration: 1,
       }, "-=0.5")
-      .from(".hero-role", {
-        opacity: 0,
-        y: 30,
-        duration: 0.8,
-      }, "-=0.6")
-      .from(".hero-desc", {
+      .from(".hero-subtitle", {
         opacity: 0,
         y: 25,
         duration: 0.8,
       }, "-=0.6")
-      .from(".hero-cta-btn", {
+      .from(".hero-description", {
         opacity: 0,
-        scale: 0.9,
+        y: 20,
+        duration: 0.8,
+      }, "-=0.6")
+      .from(".hero-btn", {
+        opacity: 0,
+        scale: 0.92,
         y: 20,
         stagger: 0.12,
         duration: 0.7,
         ease: "back.out(1.5)",
       }, "-=0.5")
-      .from(".hero-social-item", {
+      .from(".hero-social-link", {
         opacity: 0,
-        y: 15,
+        scale: 0.8,
         stagger: 0.08,
         duration: 0.6,
       }, "-=0.4")
-      .from(floatingCubesRef.current, {
-        opacity: 0,
-        scale: 0.8,
-        duration: 1.2,
-      }, "-=1")
       .from(scrollIndicatorRef.current, {
         opacity: 0,
         y: 20,
         duration: 0.8,
       }, "-=0.6");
 
-      // 2. Parallax & Exit Scrub when scrolling out of Hero
-      // Background moves at slower speed
+      // 2. Subtle background parallax (moves slower than foreground)
       if (bgImageRef.current) {
         gsap.to(bgImageRef.current, {
-          yPercent: 35,
-          scale: 1.12,
+          yPercent: 20,
+          scale: 1.06,
           ease: "none",
           scrollTrigger: {
             trigger: heroRef.current,
@@ -87,27 +80,26 @@ export default function Hero() {
         });
       }
 
-      // Foreground content leaves hero faster with fade-out
+      // 3. Smooth hero exit transition when scrolling down
       if (leftContentRef.current) {
         gsap.to(leftContentRef.current, {
-          y: -120,
+          y: -90,
           opacity: 0,
-          scale: 0.94,
+          scale: 0.96,
           ease: "none",
           scrollTrigger: {
             trigger: heroRef.current,
             start: "top top",
-            end: "80% top",
+            end: "75% top",
             scrub: 0.3,
           },
         });
       }
 
-      // Scroll indicator fades out quickly on scroll
       if (scrollIndicatorRef.current) {
         gsap.to(scrollIndicatorRef.current, {
           opacity: 0,
-          y: -30,
+          y: -25,
           ease: "none",
           scrollTrigger: {
             trigger: heroRef.current,
@@ -117,42 +109,6 @@ export default function Hero() {
           },
         });
       }
-
-      // Floating cubes move at varied individual parallax speeds for multi-layer depth
-      if (floatingCubesRef.current) {
-        const cubes = floatingCubesRef.current.querySelectorAll(".parallax-cube");
-        cubes.forEach((cube, i) => {
-          gsap.to(cube, {
-            yPercent: (i + 1) * -35,
-            rotateZ: (i % 2 === 0 ? 1 : -1) * 35,
-            opacity: 0.2,
-            ease: "none",
-            scrollTrigger: {
-              trigger: heroRef.current,
-              start: "top top",
-              end: "bottom top",
-              scrub: 0.8 + i * 0.3,
-            },
-          });
-        });
-      }
-
-      // 3. Subtle mouse move parallax for interactive 3D depth
-      const handleMouseMove = (e: MouseEvent) => {
-        const { clientX, clientY } = e;
-        const xPos = (clientX / window.innerWidth - 0.5) * 20;
-        const yPos = (clientY / window.innerHeight - 0.5) * 20;
-
-        gsap.to(floatingCubesRef.current, {
-          x: xPos * 1.5,
-          y: yPos * 1.5,
-          duration: 1,
-          ease: "power1.out",
-        });
-      };
-
-      window.addEventListener("mousemove", handleMouseMove);
-      return () => window.removeEventListener("mousemove", handleMouseMove);
     }, heroRef);
 
     return () => ctx.revert();
@@ -162,60 +118,37 @@ export default function Hero() {
     <section
       id="home"
       ref={heroRef}
-      className="relative flex min-h-screen w-full items-center overflow-hidden bg-[#05080D] pt-24 pb-16"
+      className="relative flex min-h-screen w-full items-center overflow-hidden bg-[#020408] pt-24 pb-16"
     >
-      {/* BACKGROUND IMAGE WITH MULTI-LAYER CINEMATIC MASKS */}
+      {/* 1. ATTACHED FUTURISTIC PLANET & CITY BACKGROUND IMAGE */}
       <div
         ref={bgImageRef}
         className="pointer-events-none absolute inset-0 z-0 select-none overflow-hidden will-change-transform"
       >
         <Image
-          src={PORTFOLIO_IMAGES.heroTunnel}
-          alt="Digital Tunnel Futuristic Environment"
+          src={PORTFOLIO_IMAGES.heroPlanetCity}
+          alt="Futuristic Ringed Planet and Neon City Background"
           fill
           priority
           sizes="100vw"
-          className="object-cover object-right-top opacity-60 lg:opacity-80 filter brightness-95 contrast-110"
+          className="object-cover object-[75%_center] lg:object-[82%_center] filter brightness-95 contrast-110"
         />
-        {/* Layered dark gradients for seamless blending into next sections */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#05080D] via-[#05080D]/75 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#05080D] via-[#05080D]/40 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#05080D]/90 via-transparent to-[#05080D]" />
 
-        {/* Ambient colored lighting glows */}
+        {/* Subtle dark gradient overlay on the left for maximum text readability */}
+        <div className="absolute inset-0 bg-gradient-to-r from-[#020408] via-[#020408]/85 md:via-[#020408]/70 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#020408] via-transparent to-[#020408]/40" />
+
+        {/* Subtle blue and orange atmospheric lighting */}
         <div className="absolute top-1/4 right-1/4 h-[450px] w-[450px] rounded-full bg-[#008CFF]/20 blur-[130px]" />
-        <div className="absolute bottom-1/4 right-1/3 h-[400px] w-[400px] rounded-full bg-[#FF6B00]/15 blur-[120px]" />
+        <div className="absolute bottom-1/4 left-1/4 h-[400px] w-[400px] rounded-full bg-[#FF6B00]/12 blur-[120px]" />
       </div>
 
-      {/* FLOATING GLOWING CUBES LAYER */}
-      <div
-        ref={floatingCubesRef}
-        className="pointer-events-none absolute inset-0 z-10 overflow-hidden will-change-transform"
-      >
-        {/* Cube 1: Orange glow cube top right */}
-        <div className="parallax-cube animate-float-slow absolute top-[18%] right-[18%] h-16 w-16 rounded-xl border border-[#FF6B00]/60 bg-[#FF6B00]/15 backdrop-blur-md shadow-[0_0_25px_rgba(255,107,0,0.5)]" />
-
-        {/* Cube 2: Cyan electric cube middle right */}
-        <div className="parallax-cube animate-float-delayed absolute top-[45%] right-[8%] h-24 w-24 rounded-2xl border border-[#008CFF]/60 bg-[#008CFF]/15 backdrop-blur-md shadow-[0_0_35px_rgba(0,140,255,0.45)]" />
-
-        {/* Cube 3: Small orange cube bottom right */}
-        <div className="parallax-cube animate-float-slow absolute bottom-[22%] right-[26%] h-12 w-12 rounded-lg border border-[#FF6B00]/50 bg-[#FF6B00]/15 backdrop-blur-sm shadow-[0_0_20px_rgba(255,107,0,0.4)]" />
-
-        {/* Cube 4: Electric blue cube center right */}
-        <div className="parallax-cube animate-float-delayed absolute top-[28%] right-[38%] h-10 w-10 rounded-lg border border-[#008CFF]/50 bg-[#008CFF]/15 backdrop-blur-sm shadow-[0_0_20px_rgba(0,140,255,0.4)]" />
-
-        {/* Subtle glowing particles / dust */}
-        <div className="absolute top-[35%] right-[22%] h-2 w-2 rounded-full bg-white shadow-[0_0_12px_#fff]" />
-        <div className="absolute top-[52%] right-[30%] h-1.5 w-1.5 rounded-full bg-[#FF6B00] shadow-[0_0_10px_#FF6B00]" />
-        <div className="absolute bottom-[35%] right-[15%] h-2 w-2 rounded-full bg-[#008CFF] shadow-[0_0_10px_#008CFF]" />
-      </div>
-
-      {/* VERTICAL SCROLL DOWN INDICATOR */}
+      {/* VERTICAL SCROLL DOWN INDICATOR ON THE LEFT */}
       <div
         ref={scrollIndicatorRef}
-        className="hidden lg:flex fixed left-8 bottom-14 z-30 flex-col items-center gap-3 select-none will-change-transform"
+        className="hidden lg:flex fixed left-8 bottom-12 z-30 flex-col items-center gap-3 select-none will-change-transform"
       >
-        <div className="flex h-11 w-6 items-start justify-center rounded-full border border-white/20 bg-[#080F19]/80 p-1 backdrop-blur-md shadow-[0_0_15px_rgba(0,140,255,0.2)]">
+        <div className="flex h-11 w-6 items-start justify-center rounded-full border border-white/20 bg-[#020408]/80 p-1 backdrop-blur-md shadow-[0_0_15px_rgba(0,140,255,0.25)]">
           <span className="h-2.5 w-1 animate-bounce rounded-full bg-[#FF6B00] shadow-[0_0_8px_#FF6B00]" />
         </div>
         <span
@@ -226,42 +159,44 @@ export default function Hero() {
         </span>
       </div>
 
-      {/* MAIN CONTAINER */}
+      {/* 3. HERO CONTENT: ALL TEXT ALIGNED ON THE LEFT */}
       <div className="relative z-20 mx-auto w-full max-w-7xl px-6 lg:px-16">
         <div className="grid items-center gap-12 lg:grid-cols-12">
 
-          {/* LEFT CONTENT */}
-          <div ref={leftContentRef} className="lg:col-span-7 xl:col-span-7 space-y-6 will-change-transform">
-
-            {/* Small greeting */}
-            <div className="hero-badge inline-flex items-center gap-2.5 rounded-full border border-[#FF6B00]/30 bg-[#FF6B00]/10 px-4 py-1.5 backdrop-blur-md">
-              <span className="h-2 w-2 rounded-full bg-[#FF6B00] shadow-[0_0_8px_#FF6B00]" />
-              <span className="text-xs font-semibold tracking-wider text-neutral-300 uppercase">
+          {/* Left Column Content */}
+          <div
+            ref={leftContentRef}
+            className="lg:col-span-8 xl:col-span-7 space-y-6 will-change-transform"
+          >
+            {/* Small introduction */}
+            <div className="hero-intro inline-flex items-center gap-3">
+              <span className="text-sm font-semibold tracking-wide text-white">
                 Hello, I&apos;m
               </span>
+              <span className="h-2 w-2 rounded-full bg-[#FF6B00] shadow-[0_0_10px_#FF6B00]" />
+              <span className="h-0.5 w-10 bg-gradient-to-r from-[#FF6B00] to-transparent" />
             </div>
 
-            {/* Main heading */}
-            <h1 className="hero-title-main text-5xl font-black tracking-tight text-white sm:text-6xl md:text-7xl lg:text-7xl xl:text-8xl leading-[1.05]">
+            {/* Main heading: Navjot (white) Singh (orange) */}
+            <h1 className="hero-heading text-5xl font-black tracking-tight text-white sm:text-6xl md:text-7xl lg:text-7xl xl:text-8xl leading-[1.05]">
               Navjot <span className="text-[#FF6B00] text-glow-orange">Singh</span>
             </h1>
 
-            {/* Role */}
-            <div className="hero-role text-2xl font-bold tracking-tight text-neutral-200 sm:text-3xl md:text-4xl">
-              Full Stack{" "}
-              <span className="text-[#FF6B00]">Developer</span>
+            {/* Subtitle: Full Stack Developer */}
+            <div className="hero-subtitle text-2xl font-bold tracking-tight text-white sm:text-3xl md:text-4xl">
+              Full Stack <span className="text-[#FF6B00]">Developer</span>
             </div>
 
             {/* Description */}
-            <p className="hero-desc max-w-xl text-base leading-relaxed text-[#A3A3A3] sm:text-lg">
+            <p className="hero-description max-w-xl text-base leading-relaxed text-[#A3A3A3] sm:text-lg">
               Building modern digital experiences with creativity and technology.
             </p>
 
-            {/* CTA Buttons */}
+            {/* Buttons: View My Projects → and About Me → */}
             <div className="flex flex-wrap items-center gap-4 pt-2">
               <a
                 href="#projects"
-                className="hero-cta-btn group relative inline-flex items-center gap-3 overflow-hidden rounded-full bg-[#FF6B00] px-8 py-3.5 text-base font-bold text-black shadow-[0_0_30px_rgba(255,107,0,0.4)] transition-all duration-300 hover:scale-105 hover:bg-[#FF7A1A] hover:shadow-[0_0_45px_rgba(255,107,0,0.7)]"
+                className="hero-btn group relative inline-flex items-center gap-3 rounded-full bg-[#FF6B00] px-8 py-3.5 text-base font-bold text-black shadow-[0_0_30px_rgba(255,107,0,0.45)] transition-all duration-300 hover:scale-105 hover:bg-[#FF7A1A] hover:shadow-[0_0_45px_rgba(255,107,0,0.8)]"
               >
                 <span>View My Projects</span>
                 <ArrowRight
@@ -272,23 +207,23 @@ export default function Hero() {
 
               <a
                 href="#about"
-                className="hero-cta-btn group inline-flex items-center gap-2.5 rounded-full border border-white/20 bg-[#0B1420]/80 px-7 py-3.5 text-base font-semibold text-white backdrop-blur-md transition-all duration-300 hover:border-[#FF6B00]/60 hover:bg-[#0B1420] hover:text-[#FF6B00] hover:shadow-[0_0_20px_rgba(255,107,0,0.2)]"
+                className="hero-btn group inline-flex items-center gap-2.5 rounded-full border border-white/20 bg-[#080F19]/90 px-7 py-3.5 text-base font-semibold text-white backdrop-blur-md transition-all duration-300 hover:border-[#FF6B00]/60 hover:text-[#FF6B00] hover:shadow-[0_0_20px_rgba(255,107,0,0.25)]"
               >
                 <span>About Me</span>
-                <Play
-                  size={14}
-                  className="fill-current text-[#FF6B00] transition-transform duration-300 group-hover:scale-110"
+                <ArrowRight
+                  size={16}
+                  className="transition-transform duration-300 group-hover:translate-x-1"
                 />
               </a>
             </div>
 
-            {/* Social links row */}
+            {/* Below buttons: Social Icons (GitHub, LinkedIn, Email) */}
             <div className="flex items-center gap-4 pt-4">
               <a
                 href={SOCIAL_LINKS.github}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hero-social-item group flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-[#080F19]/80 text-[#A3A3A3] backdrop-blur-md transition-all duration-300 hover:border-[#FF6B00]/60 hover:bg-[#0B1420] hover:text-[#FF6B00] hover:shadow-[0_0_15px_rgba(255,107,0,0.3)]"
+                className="hero-social-link group flex h-11 w-11 items-center justify-center rounded-full border border-white/15 bg-[#05080D]/80 text-white backdrop-blur-md transition-all duration-300 hover:border-[#FF6B00] hover:bg-[#080F19] hover:text-[#FF6B00] hover:shadow-[0_0_15px_rgba(255,107,0,0.4)]"
                 aria-label="GitHub Profile"
               >
                 <GithubIcon className="h-5 w-5 transition-transform duration-300 group-hover:scale-110" />
@@ -298,7 +233,7 @@ export default function Hero() {
                 href={SOCIAL_LINKS.linkedin}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hero-social-item group flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-[#080F19]/80 text-[#A3A3A3] backdrop-blur-md transition-all duration-300 hover:border-[#008CFF]/60 hover:bg-[#0B1420] hover:text-[#008CFF] hover:shadow-[0_0_15px_rgba(0,140,255,0.3)]"
+                className="hero-social-link group flex h-11 w-11 items-center justify-center rounded-full border border-white/15 bg-[#05080D]/80 text-white backdrop-blur-md transition-all duration-300 hover:border-[#008CFF] hover:bg-[#080F19] hover:text-[#008CFF] hover:shadow-[0_0_15px_rgba(0,140,255,0.4)]"
                 aria-label="LinkedIn Profile"
               >
                 <LinkedinIcon className="h-5 w-5 transition-transform duration-300 group-hover:scale-110" />
@@ -306,7 +241,7 @@ export default function Hero() {
 
               <a
                 href={`mailto:${SOCIAL_LINKS.email}`}
-                className="hero-social-item group flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-[#080F19]/80 text-[#A3A3A3] backdrop-blur-md transition-all duration-300 hover:border-[#FF6B00]/60 hover:bg-[#0B1420] hover:text-[#FF6B00] hover:shadow-[0_0_15px_rgba(255,107,0,0.3)]"
+                className="hero-social-link group flex h-11 w-11 items-center justify-center rounded-full border border-white/15 bg-[#05080D]/80 text-white backdrop-blur-md transition-all duration-300 hover:border-[#FF6B00] hover:bg-[#080F19] hover:text-[#FF6B00] hover:shadow-[0_0_15px_rgba(255,107,0,0.4)]"
                 aria-label="Send an email"
               >
                 <Mail size={18} className="transition-transform duration-300 group-hover:scale-110" />
@@ -315,13 +250,13 @@ export default function Hero() {
 
           </div>
 
-          {/* RIGHT SIDE: Viewport area showcasing 3D perspective depth */}
-          <div className="lg:col-span-5 hidden lg:block" />
+          {/* Right Column: Displays the planet, city, and reflection unobscured */}
+          <div className="lg:col-span-4 xl:col-span-5 hidden lg:block" />
         </div>
       </div>
 
-      {/* Bottom transition border */}
-      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+      {/* Seamless bottom transition divider */}
+      <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-[#020408] to-transparent z-20" />
     </section>
   );
 }
